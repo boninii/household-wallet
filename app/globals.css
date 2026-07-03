@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html, body {
+    background: #0F141C;
+    color: #F3F4F6;
+    font-family: var(--font-body), system-ui, sans-serif;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #1F2937;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #4B5563;
+    border-radius: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6B7280;
+  }
+}
+
+@layer components {
+  .card-surface {
+    @apply rounded-xl bg-bg-900/70 ring-1 ring-bg-700/60 shadow-card backdrop-blur;
+  }
+
+  .section-title {
+    @apply font-display tracking-wide text-brand;
+  }
+
+  .table-row-divider > * + * {
+    border-top: 1px dashed rgba(75, 85, 99, 0.4);
+  }
+
+  .font-display {
+    font-feature-settings: 'kern' 1, 'liga' 1;
+    line-height: 1.05;
+  }
+}
