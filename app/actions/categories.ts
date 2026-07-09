@@ -22,7 +22,7 @@ export async function listCategories(options?: {
   include_archived?: boolean
 }): Promise<{ items: Category[]; ready: boolean }> {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   let query = supabase
     .from('categories')
@@ -77,7 +77,7 @@ export async function createCategory(input: {
 
   }
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   let base_slug = slugify(input.label)
 
@@ -176,7 +176,7 @@ export async function updateCategory(
 
   }
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase.from('categories').update(patch).eq('id', id)
 
@@ -192,7 +192,7 @@ export async function updateCategory(
 
 export async function archiveCategory(id: string) {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase
     .from('categories')
@@ -217,7 +217,7 @@ export async function archiveCategory(id: string) {
 
 export async function restoreCategory(id: string) {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase
     .from('categories')

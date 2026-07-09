@@ -1,7 +1,8 @@
 # Household Wallet
 
-Aplicacao web pessoal para controle financeiro: orcamento mensal, metas,
-recorrentes, financiamentos e investimentos (BRL e USD). Single-user, 100% local.
+Aplicacao web para controle financeiro: orcamento mensal, metas, recorrentes,
+financiamentos e investimentos (BRL e USD). **Multi-usuario** — cada pessoa tem
+sua propria carteira, isolada por Row Level Security (RLS) do Supabase.
 
 ## Stack
 
@@ -22,16 +23,23 @@ recorrentes, financiamentos e investimentos (BRL e USD). Single-user, 100% local
 
 2. **Schema no Supabase** — abra o SQL Editor e rode na ordem:
    - [`supabase/schema.sql`](./supabase/schema.sql) (base)
-   - [`supabase/migration_v2.sql`](./supabase/migration_v2.sql) (categorias dinâmicas, recorrentes com duração, financiamentos, investimentos, fx_rates)
-   - [`supabase/migration_v3.sql`](./supabase/migration_v3.sql) (notas + recurring_id em despesas, Set A de categorias)
+   - [`supabase/migration_v2.sql`](./supabase/migration_v2.sql) → [`v7`](./supabase/migration_v7.sql) (categorias dinâmicas, financiamentos, investimentos, fx_rates, formas de pagamento…)
+   - [`supabase/migration_v8.sql`](./supabase/migration_v8.sql) (**multi-usuário**: `user_id` + RLS em todas as tabelas, seed de categorias por usuário. ⚠️ **zera os dados existentes** na primeira execução)
 
-3. **Variaveis** — `.env.local` ja contem URL/anon key.
+3. **Autenticação (Supabase Auth)** — no painel do projeto:
+   - **Authentication → Providers → Email**: habilitado.
+   - **Authentication → Email → "Confirm email"**: **desligue** para o cadastro
+     entrar direto (sem exigir confirmação por email). Religue quando quiser.
 
-4. **Dev**
+4. **Variaveis** — `.env.local` ja contem URL/anon key (usadas por servidor,
+   browser e middleware).
+
+5. **Dev**
    ```bash
    npm run dev
    ```
-   http://localhost:3000
+   http://localhost:3000 — sem sessão você cai em `/login` (cadastro pede nome,
+   email e senha).
 
 ## Rotas
 

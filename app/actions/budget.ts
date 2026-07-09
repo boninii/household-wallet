@@ -32,7 +32,7 @@ function hydrateBudget(row: any): MonthlyBudget {
 
 export async function getOrCreateBudget(month: number, year: number): Promise<MonthlyBudget> {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const existing = await supabase
     .from('monthly_budgets')
@@ -112,7 +112,7 @@ export async function getOrCreateBudget(month: number, year: number): Promise<Mo
 
 async function seedAllocationsFromPrevious(budget_id: string) {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const previous = await supabase
     .from('monthly_budgets')
@@ -176,7 +176,7 @@ export async function getBudgetAllocations(
   budget_id: string
 ): Promise<Record<string, number>> {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { data, error } = await supabase
     .from('category_allocations')
@@ -204,7 +204,7 @@ export async function getBudgetAllocations(
 
 export async function updateIncome(budget_id: string, income: number) {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase
     .from('monthly_budgets')
@@ -235,7 +235,7 @@ export async function updateGoals(budget_id: string, goals: GoalsPayload) {
 
   }
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const rows = Object.entries(goals).map(([category_id, pct]) => ({
     budget_id,
@@ -264,7 +264,7 @@ export async function updateGoals(budget_id: string, goals: GoalsPayload) {
 
 export async function listExpenses(budget_id: string): Promise<Expense[]> {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { data, error } = await supabase
     .from('expenses')
@@ -303,7 +303,7 @@ export async function addExpense(
 
   }
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { data, error } = await supabase
     .from('expenses')
@@ -397,7 +397,7 @@ export async function updateExpense(id: string, patch: ExpensePatch): Promise<Ex
 
   }
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { data, error } = await supabase
     .from('expenses')
@@ -420,7 +420,7 @@ export async function updateExpense(id: string, patch: ExpensePatch): Promise<Ex
 
 export async function deleteExpense(id: string) {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase.from('expenses').delete().eq('id', id)
 
@@ -480,7 +480,7 @@ export async function addExpenseAndRecurring(input: AddExpenseAndRecurringInput)
 
   }
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const inserted_recurring = await supabase
     .from('recurring_expenses')
@@ -537,7 +537,7 @@ export async function addExpenseAndRecurring(input: AddExpenseAndRecurringInput)
 
 export async function listRecurring(): Promise<RecurringExpense[]> {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { data, error } = await supabase
     .from('recurring_expenses')
@@ -592,7 +592,7 @@ export async function addRecurring(input: AddRecurringInput) {
 
   }
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase.from('recurring_expenses').insert({
     category: input.category,
@@ -618,7 +618,7 @@ export async function addRecurring(input: AddRecurringInput) {
 
 export async function toggleRecurring(id: string, active: boolean) {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase
     .from('recurring_expenses')
@@ -637,7 +637,7 @@ export async function toggleRecurring(id: string, active: boolean) {
 
 export async function deleteRecurring(id: string) {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase
     .from('recurring_expenses')
@@ -704,7 +704,7 @@ function isRecurringActiveFor(
 
 async function autofillForBudget(budget_id: string) {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const budget = await supabase
     .from('monthly_budgets')
@@ -848,7 +848,7 @@ export async function listBudgetHistory(): Promise<
   Array<MonthlyBudget & { total_spent: number }>
 > {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const budgets = await supabase
     .from('monthly_budgets')
@@ -897,7 +897,7 @@ export async function listBudgetHistory(): Promise<
 
 export async function deleteBudget(id: string) {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase.from('monthly_budgets').delete().eq('id', id)
 

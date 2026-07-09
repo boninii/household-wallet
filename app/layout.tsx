@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 import { DM_Sans, Jost } from 'next/font/google'
 
-import { Sidebar } from '@/components/shell/sidebar'
+import { AppShell } from '@/components/shell/app-shell'
 
 import { PrivacyProvider } from '@/components/shell/privacy-provider'
 
@@ -54,13 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           <PrivacyProvider>
 
-          <Sidebar />
-
-          <main className='min-h-screen px-8 py-8 md:pl-[112px] md:pr-8 lg:pl-[120px] lg:pr-14 lg:py-10'>
-
-            <div className='mx-auto w-full max-w-[1480px]'>{children}</div>
-
-          </main>
+          <AppShell>{children}</AppShell>
 
           </PrivacyProvider>
 

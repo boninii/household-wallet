@@ -28,7 +28,7 @@ function isMissingFxTable(err: { message: string } | null): boolean {
 
 export async function getCachedUsdBrlRate(): Promise<CachedRate> {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const cached = await supabase
     .from('fx_rates')
@@ -80,7 +80,7 @@ export async function getCachedUsdBrlRate(): Promise<CachedRate> {
 
 export async function refreshUsdBrlRate(): Promise<CachedRate> {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const fresh = await fetchFresh()
 

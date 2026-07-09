@@ -51,7 +51,7 @@ export async function listInvestments(): Promise<{
   ready: boolean
 }> {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { data, error } = await supabase
     .from('investments')
@@ -88,7 +88,7 @@ export async function createInvestment(input: CreateInvestmentInput) {
 
   }
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase.from('investments').insert({
     platform: input.platform.trim(),
@@ -122,7 +122,7 @@ export async function updateInvestmentValue(id: string, value: number) {
 
   }
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase
     .from('investments')
@@ -141,7 +141,7 @@ export async function updateInvestmentValue(id: string, value: number) {
 
 export async function deleteInvestment(id: string) {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase.from('investments').delete().eq('id', id)
 

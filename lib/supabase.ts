@@ -1,14 +1,15 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { createServerClient } from '@supabase/ssr'
 
-let cached_client: SupabaseClient | null = null
+import { cookies } from 'next/headers'
 
-export function getSupabase() {
+// Cliente Supabase para uso no SERVIDOR (server actions e server components).
+// Le a sessao do usuario a partir dos cookies, entao todas as queries rodam
+// sob o RLS do usuario logado (auth.uid()). E criado por request — nao pode
+// ser um singleton, pois cada request tem cookies diferentes.
 
-  if (cached_client) {
+export async function getSupabase() {
 
-    return cached_client
-
-  }
+  const cookie_store = await cookies()
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
 
@@ -20,11 +21,37 @@ export function getSupabase() {
 
   }
 
-  cached_client = createClient(url, key, {
-    auth: { persistSession: false }
+  return createServerClient(url, key, {
+    cookies: {
+
+      getAll() {
+
+        return cookie_store.getAll()
+
+      },
+
+      setAll(cookies_to_set) {
+
+        try {
+
+          for (const { name, value, options } of cookies_to_set) {
+
+            cookie_store.set(name, value, options)
+
+          }
+
+        } catch {
+
+          // `setAll` foi chamado de um Server Component, onde nao se pode
+          // escrever cookie. O middleware cuida de renovar a sessao, entao
+          // pode ignorar com seguranca.
+
+        }
+
+      }
+
+    }
 
   })
-
-  return cached_client
 
 }

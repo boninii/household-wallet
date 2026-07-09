@@ -52,7 +52,7 @@ export async function listFinancings(): Promise<{
   ready: boolean
 }> {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { data, error } = await supabase
     .from('financings')
@@ -79,7 +79,7 @@ export async function listFinancingPayments(
   financing_id: string
 ): Promise<FinancingPayment[]> {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { data, error } = await supabase
     .from('financing_payments')
@@ -117,7 +117,7 @@ export async function createFinancing(input: CreateFinancingInput) {
 
   }
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase.from('financings').insert({
     name: input.name.trim(),
@@ -145,7 +145,7 @@ export async function createFinancing(input: CreateFinancingInput) {
 
 export async function deleteFinancing(id: string) {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const { error } = await supabase.from('financings').delete().eq('id', id)
 
@@ -166,7 +166,7 @@ export async function payParcel(
   custom_value?: number
 ) {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const fin = await supabase
     .from('financings')
@@ -243,7 +243,7 @@ export async function payParcel(
 
 export async function undoLastParcel(financing_id: string) {
 
-  const supabase = getSupabase()
+  const supabase = await getSupabase()
 
   const fin = await supabase
     .from('financings')

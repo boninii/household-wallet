@@ -24,6 +24,8 @@ import { BrandMark } from './brand-mark'
 
 import { PrivacyToggle } from './privacy-toggle'
 
+import { UserMenu } from './user-menu'
+
 const items = [
 
   { href: '/', label: 'Dashboard', icon: BarChart3 },
@@ -96,7 +98,13 @@ export function Sidebar() {
 
       </div>
 
-      <PrivacyToggle />
+      <div className='flex flex-col items-center gap-4'>
+
+        <PrivacyToggle />
+
+        <UserMenu />
+
+      </div>
 
     </aside>
 
