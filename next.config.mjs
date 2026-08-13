@@ -2,6 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  // Permite servir o app sob um sub-caminho (ex: previews.obonini.dev.br/household-wallet).
+  // Defina NEXT_PUBLIC_BASE_PATH=/household-wallet no BUILD (Easypanel).
+  // Sem a env (dev local), o app continua na raiz.
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || undefined,
+
   // ───────────────────────────────────────────────────────────────────────
   // CACHE DE NAVEGAÇÃO (Router Cache do Next)
   //
