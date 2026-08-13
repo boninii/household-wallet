@@ -148,7 +148,7 @@ export function ColorPicker({ value, onChange, used_by }: Props) {
                   aria-label={c}
                 >
                   {is_selected && (
-                    <Check className='h-4 w-4 text-bg-900 mix-blend-difference' />
+                    <Check className='h-4 w-4 text-white mix-blend-difference' />
 
                   )}
 

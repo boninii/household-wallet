@@ -28,7 +28,7 @@ export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHead
 
   return (
     <h3
-      className={cn('section-title text-xl', className)}
+      className={cn('section-title text-lg', className)}
       {...props}
     />
 

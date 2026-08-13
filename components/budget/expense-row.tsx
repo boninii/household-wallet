@@ -92,11 +92,12 @@ export function ExpenseRow({ expense, on_updated, on_deleted }: Props) {
 
       try {
 
+        // payment_method fica de fora do patch de propósito: a edição inline
+        // não mexe nele — mandar null aqui apagava a forma de pagamento.
         const updated = await updateExpense(expense.id, {
           name,
           value: numeric,
-          notes,
-          payment_method: null
+          notes
 
         })
 

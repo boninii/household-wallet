@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 
 import { getSupabase } from '@/lib/supabase'
 
+import { assertHexColor, assertLabel } from '@/lib/validate'
+
 import type { Category } from '@/lib/types'
 
 function isMissingTable(err: { message: string } | null): boolean {
@@ -71,11 +73,9 @@ export async function createCategory(input: {
   color: string
 }) {
 
-  if (!input.label.trim()) {
+  assertLabel(input.label)
 
-    throw new Error('Nome da categoria nao pode ficar vazio.')
-
-  }
+  assertHexColor(input.color)
 
   const supabase = await getSupabase()
 
@@ -148,17 +148,15 @@ export async function updateCategory(
 
   if (typeof input.label === 'string') {
 
-    if (!input.label.trim()) {
-
-      throw new Error('Nome nao pode ficar vazio.')
-
-    }
+    assertLabel(input.label)
 
     patch.label = input.label.trim()
 
   }
 
   if (typeof input.color === 'string') {
+
+    assertHexColor(input.color)
 
     patch.color = input.color
 

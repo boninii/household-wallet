@@ -2,14 +2,105 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ───────────────────────────────────────────────────────────────────────
+   TEMAS — tokens como canais "R G B" (para permitir opacidade no Tailwind).
+   Claro: creme quente com âmbar profundo. Escuro: charcoal quente (café),
+   coerente com o claro — nada de azul frio, sombras mínimas.
+   ─────────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
+    /* Superfícies — 950 = canvas, 900 = card, 800..600 = fills/bordas */
+    --bg-950: 250 247 242;   /* #FAF7F2 creme */
+    --bg-900: 255 255 255;   /* cards */
+    --bg-800: 238 233 224;   /* fill sutil / hover */
+    --bg-700: 226 218 206;   /* borda / ring */
+    --bg-600: 210 200 185;   /* borda de input */
+
+    /* Texto */
+    --text-50: 38 33 26;     /* títulos */
+    --text-100: 58 51 42;    /* corpo */
+    --text-300: 99 89 76;    /* secundário */
+    --text-500: 138 128 114; /* placeholder */
+
+    /* Marca (âmbar profundo no claro: legível como texto e como fill) */
+    --brand: 140 88 16;
+    --brand-dark: 108 66 10;
+    --brand-light: 200 140 66;
+    --brand-ink: 255 250 242;
+
+    /* Semânticos */
+    --positive: 4 120 87;
+    --positive-soft: 6 122 80;
+    --negative: 197 34 34;
+    --negative-soft: 200 30 30;
+
+    /* Sombra única e leve — profundidade vem de superfície + ring */
+    --shadow-card: 0 1px 2px rgba(60, 48, 32, 0.06), 0 3px 10px rgba(120, 95, 60, 0.05);
+
+    color-scheme: light;
+  }
+
+  /* Escuro por preferência do sistema (a não ser que o usuário force claro) */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg-950: 19 17 16;    /* #131110 charcoal quente */
+      --bg-900: 28 25 23;    /* #1C1917 cards */
+      --bg-800: 41 37 34;
+      --bg-700: 58 52 46;
+      --bg-600: 78 70 61;
+
+      --text-50: 245 240 232;
+      --text-100: 226 219 208;
+      --text-300: 168 158 143;
+      --text-500: 122 113 100;
+
+      --brand: 232 169 90;   /* âmbar claro sobre charcoal */
+      --brand-dark: 204 141 66;
+      --brand-light: 242 198 132;
+      --brand-ink: 32 23 9;
+
+      --positive: 4 120 87;
+      --positive-soft: 16 185 129;
+      --negative: 220 38 38;
+      --negative-soft: 248 113 113;
+
+      --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
+
+      color-scheme: dark;
+    }
+  }
+
+  /* Escuro explícito (botão) — vence a media query */
+  [data-theme='dark'] {
+    --bg-950: 19 17 16;
+    --bg-900: 28 25 23;
+    --bg-800: 41 37 34;
+    --bg-700: 58 52 46;
+    --bg-600: 78 70 61;
+
+    --text-50: 245 240 232;
+    --text-100: 226 219 208;
+    --text-300: 168 158 143;
+    --text-500: 122 113 100;
+
+    --brand: 232 169 90;
+    --brand-dark: 204 141 66;
+    --brand-light: 242 198 132;
+    --brand-ink: 32 23 9;
+
+    --positive: 4 120 87;
+    --positive-soft: 16 185 129;
+    --negative: 220 38 38;
+    --negative-soft: 248 113 113;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
+
     color-scheme: dark;
   }
 
   html, body {
-    background: #0F141C;
-    color: #F3F4F6;
+    background: rgb(var(--bg-950));
+    color: rgb(var(--text-100));
     font-family: var(--font-body), system-ui, sans-serif;
     min-height: 100vh;
   }
@@ -20,34 +111,38 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #1F2937;
+    background: rgb(var(--bg-900));
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #4B5563;
+    background: rgb(var(--bg-600));
     border-radius: 8px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #6B7280;
+    background: rgb(var(--bg-700));
   }
 }
 
 @layer components {
+  /* Card: superfície sólida + ring. Sem blur (custo no mobile) e sem
+     sombras profundas — o app não deve parecer "flutuando". */
   .card-surface {
-    @apply rounded-xl bg-bg-900/70 ring-1 ring-bg-700/60 shadow-card backdrop-blur;
+    @apply rounded-xl bg-bg-900 ring-1 ring-bg-700/60 shadow-card;
   }
 
+  /* Título de seção/card: display escuro e firme. Âmbar fica reservado
+     para ação, estado ativo e números-chave — não para todo título. */
   .section-title {
-    @apply font-display tracking-wide text-brand;
+    @apply font-display font-semibold tracking-[-0.01em] text-text-50;
   }
 
   .table-row-divider > * + * {
-    border-top: 1px dashed rgba(75, 85, 99, 0.4);
+    border-top: 1px dashed rgb(var(--bg-700) / 0.7);
   }
 
   .font-display {
     font-feature-settings: 'kern' 1, 'liga' 1;
-    line-height: 1.05;
+    line-height: 1.15;
   }
 }

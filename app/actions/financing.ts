@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 
 import { getSupabase } from '@/lib/supabase'
 
+import { assertMoney, assertMonthYear } from '@/lib/validate'
+
 import { getOrCreateBudget } from './budget'
 
 import type {
@@ -105,15 +107,35 @@ export async function createFinancing(input: CreateFinancingInput) {
 
   }
 
-  if (!(input.total_parcels > 0)) {
+  if (!Number.isInteger(input.total_parcels) || input.total_parcels <= 0 || input.total_parcels > 1200) {
 
     throw new Error('Quantidade de parcelas inválida.')
 
   }
 
-  if (!(input.parcel_value >= 0)) {
+  assertMoney(input.parcel_value, 'Valor da parcela')
 
-    throw new Error('Valor da parcela inválido.')
+  assertMonthYear(input.start_month, input.start_year)
+
+  if (input.interest_rate !== null && input.interest_rate !== undefined) {
+
+    if (!Number.isFinite(input.interest_rate) || input.interest_rate < 0) {
+
+      throw new Error('Taxa de juros inválida.')
+
+    }
+
+  }
+
+  if (input.down_payment !== undefined) {
+
+    assertMoney(input.down_payment, 'Entrada')
+
+  }
+
+  if (input.total_value !== null && input.total_value !== undefined) {
+
+    assertMoney(input.total_value, 'Valor total')
 
   }
 
@@ -165,6 +187,14 @@ export async function payParcel(
   year: number,
   custom_value?: number
 ) {
+
+  assertMonthYear(month, year)
+
+  if (typeof custom_value === 'number') {
+
+    assertMoney(custom_value, 'Valor da parcela')
+
+  }
 
   const supabase = await getSupabase()
 

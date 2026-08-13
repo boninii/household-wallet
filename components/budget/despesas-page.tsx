@@ -141,7 +141,7 @@ export function DespesasPage({
           className={cn(
             'flex items-center gap-2 rounded-full px-4 py-2 text-sm transition',
             is_all
-              ? 'bg-brand text-bg-900 shadow-card'
+              ? 'bg-brand text-brand-ink shadow-card'
               : 'bg-bg-800 text-text-100 hover:bg-bg-700'
 
           )}
@@ -165,7 +165,7 @@ export function DespesasPage({
               className={cn(
                 'flex items-center gap-2 rounded-full px-4 py-2 text-sm transition',
                 isActive
-                  ? 'bg-brand text-bg-900 shadow-card'
+                  ? 'bg-brand text-brand-ink shadow-card'
                   : 'bg-bg-800 text-text-100 hover:bg-bg-700'
 
               )}

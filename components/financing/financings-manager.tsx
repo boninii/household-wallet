@@ -327,7 +327,7 @@ export function FinancingsManager({ items, categories }: Props) {
                     className={cn(
                       'flex items-center gap-2 rounded-full px-3 py-1.5 text-xs ring-1',
                       category === c.slug
-                        ? 'bg-brand text-bg-900 ring-brand'
+                        ? 'bg-brand text-brand-ink ring-brand'
                         : 'bg-bg-800 text-text-100 ring-bg-700 hover:bg-bg-700'
 
                     )}
@@ -621,7 +621,7 @@ export function FinancingsManager({ items, categories }: Props) {
       {paying_id && (
 
         <div
-          className='fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm'
+          className='fixed inset-0 z-50 flex items-center justify-center bg-black/70'
           onClick={closePay}
         >
 

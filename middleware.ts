@@ -52,8 +52,14 @@ export async function middleware(request: NextRequest) {
 
   })
 
-  // IMPORTANTE: nao rode codigo entre createServerClient e getUser().
-  const { data: { user } } = await supabase.auth.getUser()
+  // getSession() le a sessao do COOKIE (sem rede) e so vai a rede quando o
+  // token expirou (renova ~1x/hora). O middleware aqui e apenas gating de UX
+  // (redirecionar quem nao tem sessao); a seguranca real esta no RLS — toda
+  // query roda com o JWT validado pelo Postgres. getUser() faria uma chamada
+  // de rede ao servidor de auth em TODA navegacao (~200ms por clique).
+  const { data: { session } } = await supabase.auth.getSession()
+
+  const user = session?.user ?? null
 
   const path = request.nextUrl.pathname
 

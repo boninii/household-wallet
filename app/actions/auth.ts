@@ -33,7 +33,39 @@ export async function signIn(email: string, password: string): Promise<AuthResul
 
   if (error) {
 
-    return { error: 'Email ou senha invalidos.' }
+    const code = (error as { code?: string }).code ?? ''
+
+    const message = error.message ?? ''
+
+    console.error('[signIn] falhou:', {
+      status: (error as { status?: number }).status,
+      code,
+      name: error.name,
+      message
+
+    })
+
+    // Email cadastrado mas ainda nao confirmado. E o caso mais confuso:
+    // o Supabase recusa o login e parece "senha errada".
+    if (code === 'email_not_confirmed' || /email not confirmed/i.test(message)) {
+
+      return {
+        error:
+          'Este email ainda nao foi confirmado. Clique no link que o Supabase enviou, ou desligue "Confirm email" em Authentication > Email no painel.',
+        needs_confirmation: true
+
+      }
+
+    }
+
+    if (code === 'invalid_credentials' || /invalid login credentials/i.test(message)) {
+
+      return { error: 'Email ou senha invalidos.' }
+
+    }
+
+    // Qualquer outro motivo: mostra o real, para nao esconder a causa.
+    return { error: message || 'Nao foi possivel entrar.' }
 
   }
 
@@ -82,9 +114,48 @@ export async function signUp(
 
   if (error) {
 
-    return { error: error.message }
+    const status = (error as { status?: number }).status ?? 0
+
+    const raw = (error.message ?? '').trim()
+
+    console.error('[signUp] falhou:', {
+      status,
+      code: (error as { code?: string }).code,
+      name: error.name,
+      message: raw
+
+    })
+
+    // Erro de servidor (500) ou corpo vazio/opaco: o Supabase nao deu um motivo
+    // util. Quase sempre e o trigger de seed no banco falhando ao criar o usuario.
+    const is_opaque = raw === '' || raw === '{}' || raw === '[object Object]'
+
+    if (status >= 500 || is_opaque) {
+
+      return {
+        error:
+          'O servidor de autenticação retornou um erro ao criar a conta. Se persistir, verifique os Postgres Logs do Supabase (provável falha no trigger de seed).'
+
+      }
+
+    }
+
+    if (/already registered|already been registered/i.test(raw)) {
+
+      return { error: 'Este email já está cadastrado. Use "Entrar".' }
+
+    }
+
+    return { error: raw }
 
   }
+
+  console.error('[signUp] ok:', {
+    user_id: data.user?.id,
+    email_confirmed_at: data.user?.email_confirmed_at ?? null,
+    has_session: Boolean(data.session)
+
+  })
 
   // Com "Confirm email" LIGADO, a sessao so nasce apos confirmar o email.
   // Detecta esse caso para a UI mostrar a mensagem certa.

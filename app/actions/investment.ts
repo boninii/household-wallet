@@ -4,13 +4,28 @@ import { revalidatePath } from 'next/cache'
 
 import { getSupabase } from '@/lib/supabase'
 
+import { assertMoney } from '@/lib/validate'
+
 import type {
   Investment,
   InvestmentCurrency,
   InvestmentKind
 } from '@/lib/types'
 
-export type CreateInvestmentInput = {
+const KINDS: InvestmentKind[] = [
+  'renda_fixa',
+  'renda_variavel',
+  'fundos',
+  'cripto',
+  'internacional',
+  'outros'
+]
+
+const CURRENCIES: InvestmentCurrency[] = ['BRL', 'USD']
+
+const RATE_TYPES = ['cdi', 'aa', 'ipca', 'selic', 'outro']
+
+export type InvestmentInput = {
 
   platform: string
 
@@ -31,6 +46,78 @@ export type CreateInvestmentInput = {
   maturity_date?: string | null
 
   notes?: string | null
+
+}
+
+// Regras básicas de consistência, aplicadas em criar E editar.
+function validate(input: InvestmentInput) {
+
+  if (!input.platform.trim()) {
+
+    throw new Error('Informe a plataforma.')
+
+  }
+
+  if (!KINDS.includes(input.kind)) {
+
+    throw new Error('Tipo de investimento inválido.')
+
+  }
+
+  if (!CURRENCIES.includes(input.currency)) {
+
+    throw new Error('Moeda inválida.')
+
+  }
+
+  assertMoney(input.value, 'Valor')
+
+  if (input.rate !== null && input.rate !== undefined) {
+
+    if (!Number.isFinite(input.rate) || input.rate < 0) {
+
+      throw new Error('Taxa inválida — use um número maior ou igual a zero.')
+
+    }
+
+    if (input.rate_type && !RATE_TYPES.includes(input.rate_type)) {
+
+      throw new Error('Tipo de taxa inválido.')
+
+    }
+
+  }
+
+  // Datas chegam como 'YYYY-MM-DD' — comparação lexicográfica é segura.
+  if (
+    input.purchase_date &&
+    input.maturity_date &&
+    input.purchase_date > input.maturity_date
+  ) {
+
+    throw new Error('A data da aplicação não pode ser depois do vencimento.')
+
+  }
+
+}
+
+function toRow(input: InvestmentInput) {
+
+  return {
+    platform: input.platform.trim(),
+    kind: input.kind,
+    subtype: input.subtype?.trim() || null,
+    currency: input.currency,
+    value: input.value,
+    rate: input.rate ?? null,
+    rate_type: input.rate !== null && input.rate !== undefined
+      ? (input.rate_type ?? null)
+      : null,
+    purchase_date: input.purchase_date || null,
+    maturity_date: input.maturity_date || null,
+    notes: input.notes?.trim() || null
+
+  }
 
 }
 
@@ -74,35 +161,13 @@ export async function listInvestments(): Promise<{
 
 }
 
-export async function createInvestment(input: CreateInvestmentInput) {
+export async function createInvestment(input: InvestmentInput) {
 
-  if (!input.platform.trim()) {
-
-    throw new Error('Informe a plataforma.')
-
-  }
-
-  if (!(input.value >= 0)) {
-
-    throw new Error('Valor invalido.')
-
-  }
+  validate(input)
 
   const supabase = await getSupabase()
 
-  const { error } = await supabase.from('investments').insert({
-    platform: input.platform.trim(),
-    kind: input.kind,
-    subtype: input.subtype?.trim() || null,
-    currency: input.currency,
-    value: input.value,
-    rate: input.rate ?? null,
-    rate_type: input.rate_type ?? null,
-    purchase_date: input.purchase_date ?? null,
-    maturity_date: input.maturity_date ?? null,
-    notes: input.notes?.trim() || null
-
-  })
+  const { error } = await supabase.from('investments').insert(toRow(input))
 
   if (error) {
 
@@ -114,19 +179,15 @@ export async function createInvestment(input: CreateInvestmentInput) {
 
 }
 
-export async function updateInvestmentValue(id: string, value: number) {
+export async function updateInvestment(id: string, input: InvestmentInput) {
 
-  if (!(value >= 0)) {
-
-    throw new Error('Valor invalido.')
-
-  }
+  validate(input)
 
   const supabase = await getSupabase()
 
   const { error } = await supabase
     .from('investments')
-    .update({ value })
+    .update(toRow(input))
     .eq('id', id)
 
   if (error) {

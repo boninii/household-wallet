@@ -27,7 +27,7 @@ export function PrivacyToggle() {
           className={cn(
             'flex h-11 w-11 items-center justify-center rounded-2xl transition',
             hidden
-              ? 'bg-brand text-bg-900 shadow-card'
+              ? 'bg-brand text-brand-ink shadow-card'
               : 'bg-bg-800 text-text-300 hover:bg-bg-700 hover:text-text-50'
 
           )}

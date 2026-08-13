@@ -4,13 +4,14 @@ import { useMemo, useState, useTransition } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { Loader2, Plus, Trash2, X } from 'lucide-react'
+import { Check, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react'
 
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
+import { Donut } from '@/components/ui/donut'
 
 import {
   createInvestment,
-  deleteInvestment
+  deleteInvestment,
+  updateInvestment
 } from '@/app/actions/investment'
 
 import type {
@@ -21,7 +22,7 @@ import type {
 
 import { RATE_TYPES, formatRate } from '@/lib/types'
 
-import { cn, formatBRL, parseBRL } from '@/lib/utils'
+import { cn, formatBRL, formatBRLPlain, parseBRL } from '@/lib/utils'
 
 import { usePrivacy } from '@/components/shell/privacy-provider'
 
@@ -127,11 +128,85 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
 
   const [notes, setNotes] = useState('')
 
+  const [editing_id, setEditingId] = useState<string | null>(null)
+
   const [error, setError] = useState<string | null>(null)
 
   const [pending, startTransition] = useTransition()
 
-  function handleCreate(e: React.FormEvent) {
+  function resetForm() {
+
+    setPlatform('')
+
+    setKind('renda_fixa')
+
+    setSubtype('')
+
+    setCurrencyVal('BRL')
+
+    setValue('')
+
+    setInterest('')
+
+    setRateType('cdi')
+
+    setPurchase(new Date().toISOString().slice(0, 10))
+
+    setMaturity('')
+
+    setNotes('')
+
+    setEditingId(null)
+
+    setError(null)
+
+  }
+
+  function startEdit(inv: Investment) {
+
+    setPlatform(inv.platform)
+
+    setKind(inv.kind)
+
+    setSubtype(inv.subtype ?? '')
+
+    setCurrencyVal(inv.currency)
+
+    setValue(formatBRLPlain(Number(inv.value)))
+
+    setInterest(inv.rate !== null ? String(inv.rate).replace('.', ',') : '')
+
+    setRateType(inv.rate_type ?? 'cdi')
+
+    setPurchase(inv.purchase_date?.slice(0, 10) ?? '')
+
+    setMaturity(inv.maturity_date?.slice(0, 10) ?? '')
+
+    setNotes(inv.notes ?? '')
+
+    setEditingId(inv.id)
+
+    setError(null)
+
+    setOpen(true)
+
+    window.scrollTo({ top: 0 })
+
+  }
+
+  function toggleForm() {
+
+    if (open) {
+
+      resetForm()
+
+    }
+
+    setOpen((o) => !o)
+
+  }
+
+  function handleSubmit(e: React.FormEvent) {
 
     e.preventDefault()
 
@@ -147,37 +222,54 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
 
     }
 
+    // Regras básicas de consistência (o servidor revalida as mesmas).
+    if (purchase && maturity && purchase > maturity) {
+
+      setError('A data da aplicação não pode ser depois do vencimento.')
+
+      return
+
+    }
+
+    const rate_num = interest ? Number(interest.replace(',', '.')) : null
+
+    if (interest && (!Number.isFinite(rate_num!) || rate_num! < 0)) {
+
+      setError('Taxa inválida — use um número maior ou igual a zero.')
+
+      return
+
+    }
+
+    const payload = {
+      platform,
+      kind,
+      subtype: subtype || null,
+      currency,
+      value: numeric,
+      rate: rate_num,
+      rate_type: interest ? rate_type : null,
+      purchase_date: purchase || null,
+      maturity_date: maturity || null,
+      notes
+
+    }
+
     startTransition(async () => {
 
       try {
 
-        await createInvestment({
-          platform,
-          kind,
-          subtype: subtype || null,
-          currency,
-          value: numeric,
-          rate: interest ? Number(interest.replace(',', '.')) : null,
-          rate_type: interest ? rate_type : null,
-          purchase_date: purchase || null,
-          maturity_date: maturity || null,
-          notes
+        if (editing_id) {
 
-        })
+          await updateInvestment(editing_id, payload)
 
-        setPlatform('')
+        } else {
 
-        setSubtype('')
+          await createInvestment(payload)
 
-        setValue('')
+        }
 
-        setInterest('')
-
-        setPurchase(new Date().toISOString().slice(0, 10))
-
-        setMaturity('')
-
-        setNotes('')
+        resetForm()
 
         setOpen(false)
 
@@ -265,7 +357,7 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
         title='Investimentos'
         subtitle='Catalogue suas posições por plataforma, tipo, moeda e vencimento. Suporta BRL e USD na mesma carteira.'
         action={
-          <Button onClick={() => setOpen((o) => !o)}>
+          <Button onClick={toggleForm}>
             {open ? (
               <X className='h-3.5 w-3.5' />
             ) : (
@@ -317,43 +409,7 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
 
               <div className='h-[170px] w-full shrink-0 sm:w-[170px]'>
 
-                <ResponsiveContainer>
-
-                  <PieChart>
-
-                    <Pie
-                      data={chart_data}
-                      dataKey='value'
-                      nameKey='name'
-                      innerRadius={50}
-                      outerRadius={82}
-                      stroke='none'
-                      paddingAngle={1.5}
-                    >
-                      {chart_data.map((d, i) => (
-                        <Cell key={i} fill={d.color} />
-
-                      ))}
-                    </Pie>
-
-                    <Tooltip
-                      cursor={false}
-                      contentStyle={{
-                        background: '#1F2937',
-                        border: '1px solid #4B5563',
-                        borderRadius: 8,
-                        fontSize: 12,
-                        color: '#F3F4F6'
-
-                      }}
-                      itemStyle={{ color: '#F3F4F6' }}
-                      labelStyle={{ color: '#F3F4F6' }}
-                      formatter={(v: number) => format(v)}
-                    />
-
-                  </PieChart>
-
-                </ResponsiveContainer>
+                <Donut data={chart_data} inner_radius={58} outer_radius={96} format={format} />
 
               </div>
 
@@ -404,7 +460,7 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
             <CardTitle>Novo investimento</CardTitle>
           </CardHeader>
 
-          <form onSubmit={handleCreate} className='flex flex-col gap-5'>
+          <form onSubmit={handleSubmit} className='flex flex-col gap-5'>
 
             <div>
 
@@ -425,7 +481,7 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
                     className={cn(
                       'flex items-center gap-2 rounded-full px-3 py-1.5 text-xs ring-1',
                       kind === k.key
-                        ? 'bg-brand text-bg-900 ring-brand'
+                        ? 'bg-brand text-brand-ink ring-brand'
                         : 'bg-bg-800 text-text-100 ring-bg-700 hover:bg-bg-700'
 
                     )}
@@ -482,7 +538,7 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
                     className={cn(
                       'rounded-lg px-3 py-1.5 text-xs font-semibold transition',
                       currency === 'BRL'
-                        ? 'bg-brand text-bg-900'
+                        ? 'bg-brand text-brand-ink'
                         : 'text-text-300 hover:text-text-50'
 
                     )}
@@ -496,7 +552,7 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
                     className={cn(
                       'rounded-lg px-3 py-1.5 text-xs font-semibold transition',
                       currency === 'USD'
-                        ? 'bg-brand text-bg-900'
+                        ? 'bg-brand text-brand-ink'
                         : 'text-text-300 hover:text-text-50'
 
                     )}
@@ -538,7 +594,7 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
                         className={cn(
                           'rounded-full px-3 py-1.5 text-xs ring-1 transition',
                           rate_type === t.key
-                            ? 'bg-brand text-bg-900 ring-brand'
+                            ? 'bg-brand text-brand-ink ring-brand'
                             : 'bg-bg-800 text-text-100 ring-bg-700 hover:bg-bg-700',
                           !interest && 'opacity-40 cursor-not-allowed'
 
@@ -604,11 +660,13 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
               <Button type='submit' disabled={pending}>
                 {pending ? (
                   <Loader2 className='h-3.5 w-3.5 animate-spin' />
+                ) : editing_id ? (
+                  <Check className='h-3.5 w-3.5' />
                 ) : (
                   <Plus className='h-3.5 w-3.5' />
 
                 )}
-                Salvar
+                {editing_id ? 'Salvar alterações' : 'Salvar'}
               </Button>
 
             </div>
@@ -683,7 +741,18 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
                         </span>
                       </td>
 
-                      <td className='py-3 text-text-50'>{inv.platform}</td>
+                      <td className='py-3'>
+                        <p className='text-text-50'>{inv.platform}</p>
+                        {inv.notes && (
+                          <p
+                            className='mt-0.5 max-w-[220px] truncate text-[11px] text-text-300'
+                            title={inv.notes}
+                          >
+                            {inv.notes}
+                          </p>
+
+                        )}
+                      </td>
 
                       <td className='py-3 text-text-100'>{inv.subtype || '—'}</td>
 
@@ -712,13 +781,25 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
                       </td>
 
                       <td className='py-3 text-right'>
-                        <button
-                          onClick={() => handleDelete(inv.id)}
-                          className='text-text-300 hover:text-negative'
-                          aria-label='Excluir'
-                        >
-                          <Trash2 className='h-4 w-4' />
-                        </button>
+                        <div className='inline-flex items-center gap-2'>
+
+                          <button
+                            onClick={() => startEdit(inv)}
+                            className='text-text-300 hover:text-text-50'
+                            aria-label='Editar'
+                          >
+                            <Pencil className='h-4 w-4' />
+                          </button>
+
+                          <button
+                            onClick={() => handleDelete(inv.id)}
+                            className='text-text-300 hover:text-negative'
+                            aria-label='Excluir'
+                          >
+                            <Trash2 className='h-4 w-4' />
+                          </button>
+
+                        </div>
                       </td>
 
                     </tr>

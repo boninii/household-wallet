@@ -1,7 +1,14 @@
 import type { Config } from 'tailwindcss'
 
+// Cores via CSS variables (definidas em app/globals.css por tema claro/escuro).
+// Cada variável guarda os canais "R G B" para permitir o modificador de opacidade
+// do Tailwind (ex.: bg-bg-900/60).
+function token(name: string) {
+  return `rgb(var(${name}) / <alpha-value>)`
+}
+
 const config: Config = {
-  darkMode: 'class',
+  darkMode: ['selector', '[data-theme="dark"]'],
   content: [
     './app/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
@@ -11,31 +18,33 @@ const config: Config = {
     extend: {
       colors: {
         bg: {
-          950: '#0F141C',
-          900: '#1F2937',
-          800: '#2A3441',
-          700: '#3B4654',
-          600: '#4B5563'
+          950: token('--bg-950'),
+          900: token('--bg-900'),
+          800: token('--bg-800'),
+          700: token('--bg-700'),
+          600: token('--bg-600')
         },
         text: {
-          50: '#F3F4F6',
-          100: '#E5E7EB',
-          300: '#9CA3AF',
-          500: '#6B7280'
+          50: token('--text-50'),
+          100: token('--text-100'),
+          300: token('--text-300'),
+          500: token('--text-500')
         },
         brand: {
-          DEFAULT: '#E8A95A',
-          dark: '#C28A3B',
-          light: '#F2C684'
+          DEFAULT: token('--brand'),
+          dark: token('--brand-dark'),
+          light: token('--brand-light'),
+          ink: token('--brand-ink')
         },
         positive: {
-          DEFAULT: '#047857',
-          soft: '#10B981'
+          DEFAULT: token('--positive'),
+          soft: token('--positive-soft')
         },
         negative: {
-          DEFAULT: '#DC2626',
-          soft: '#F87171'
+          DEFAULT: token('--negative'),
+          soft: token('--negative-soft')
         },
+        // Cores de dados (donut, dots) — iguais nos dois temas.
         category: {
           custos: '#3B82F6',
           conforto: '#22D3EE',
@@ -53,7 +62,7 @@ const config: Config = {
         xl: '0.875rem'
       },
       boxShadow: {
-        card: '0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.25)'
+        card: 'var(--shadow-card)'
       }
     }
   },

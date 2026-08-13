@@ -13,7 +13,7 @@ import {
   X
 } from 'lucide-react'
 
-import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
+import { Donut } from '@/components/ui/donut'
 
 import { updateGoals } from '@/app/actions/budget'
 
@@ -417,28 +417,7 @@ export function CategoriasPage({ budget, categories, allocations }: Props) {
 
           <div className='h-[240px] w-full'>
 
-            <ResponsiveContainer>
-
-              <PieChart>
-
-                <Pie
-                  data={chart_data}
-                  dataKey='value'
-                  nameKey='name'
-                  innerRadius={70}
-                  outerRadius={110}
-                  stroke='none'
-                  paddingAngle={1.5}
-                >
-                  {chart_data.map((d, i) => (
-                    <Cell key={i} fill={d.color} />
-
-                  ))}
-                </Pie>
-
-              </PieChart>
-
-            </ResponsiveContainer>
+            <Donut data={chart_data} inner_radius={64} outer_radius={98} />
 
           </div>
 

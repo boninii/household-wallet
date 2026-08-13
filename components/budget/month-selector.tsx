@@ -57,12 +57,12 @@ export function MonthSelector({ month, year }: Props) {
           aria-label='Mês anterior'
           onClick={() => jump(-1)}
           disabled={pending}
-          className='flex h-8 w-8 items-center justify-center rounded-lg text-bg-900 hover:bg-bg-900/10 disabled:opacity-50'
+          className='flex h-8 w-8 items-center justify-center rounded-lg text-brand-ink hover:bg-brand-ink/10 disabled:opacity-50'
         >
           <ChevronLeft className='h-4 w-4' />
         </button>
 
-        <span className='min-w-[140px] px-3 text-center font-sans text-sm font-semibold text-bg-900'>
+        <span className='min-w-[140px] px-3 text-center font-sans text-sm font-semibold text-brand-ink'>
 
           {pending ? (
 
@@ -80,7 +80,7 @@ export function MonthSelector({ month, year }: Props) {
           aria-label='Próximo mês'
           onClick={() => jump(1)}
           disabled={pending}
-          className='flex h-8 w-8 items-center justify-center rounded-lg text-bg-900 hover:bg-bg-900/10 disabled:opacity-50'
+          className='flex h-8 w-8 items-center justify-center rounded-lg text-brand-ink hover:bg-brand-ink/10 disabled:opacity-50'
         >
           <ChevronRight className='h-4 w-4' />
         </button>

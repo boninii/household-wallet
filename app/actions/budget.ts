@@ -4,6 +4,12 @@ import { revalidatePath } from 'next/cache'
 
 import { getSupabase } from '@/lib/supabase'
 
+import {
+  assertMoney,
+  assertMonthYear,
+  assertPaymentMethod
+} from '@/lib/validate'
+
 import type {
   Expense,
   MonthlyBudget,
@@ -31,6 +37,9 @@ function hydrateBudget(row: any): MonthlyBudget {
 }
 
 export async function getOrCreateBudget(month: number, year: number): Promise<MonthlyBudget> {
+
+  // Protege contra querystring com lixo (?month=99) antes de tocar o banco.
+  assertMonthYear(month, year)
 
   const supabase = await getSupabase()
 
@@ -204,6 +213,8 @@ export async function getBudgetAllocations(
 
 export async function updateIncome(budget_id: string, income: number) {
 
+  assertMoney(income, 'Renda')
+
   const supabase = await getSupabase()
 
   const { error } = await supabase
@@ -222,6 +233,20 @@ export async function updateIncome(budget_id: string, income: number) {
 }
 
 export async function updateGoals(budget_id: string, goals: GoalsPayload) {
+
+  // Cada meta precisa estar entre 0 e 100 — sem isso, uma pct negativa
+  // poderia "compensar" a soma e passar pelo teto de 100%.
+  for (const pct of Object.values(goals)) {
+
+    const n = Number(pct)
+
+    if (!Number.isFinite(n) || n < 0 || n > 100) {
+
+      throw new Error('Cada meta precisa estar entre 0% e 100%.')
+
+    }
+
+  }
 
   const total = Object.values(goals).reduce(
     (acc, n) => acc + Number(n || 0),
@@ -297,11 +322,9 @@ export async function addExpense(
 
   }
 
-  if (!(value >= 0)) {
+  assertMoney(value, 'Valor')
 
-    throw new Error('Valor inválido.')
-
-  }
+  assertPaymentMethod(payment_method)
 
   const supabase = await getSupabase()
 
@@ -363,11 +386,7 @@ export async function updateExpense(id: string, patch: ExpensePatch): Promise<Ex
 
   if (typeof patch.value === 'number') {
 
-    if (!(patch.value >= 0)) {
-
-      throw new Error('Valor inválido.')
-
-    }
+    assertMoney(patch.value, 'Valor')
 
     update.value = patch.value
 
@@ -386,6 +405,8 @@ export async function updateExpense(id: string, patch: ExpensePatch): Promise<Ex
   }
 
   if (patch.payment_method !== undefined) {
+
+    assertPaymentMethod(patch.payment_method)
 
     update.payment_method = patch.payment_method || null
 
@@ -468,11 +489,11 @@ export async function addExpenseAndRecurring(input: AddExpenseAndRecurringInput)
 
   }
 
-  if (!(input.value >= 0)) {
+  assertMoney(input.value, 'Valor')
 
-    throw new Error('Valor inválido.')
+  assertMonthYear(input.start_month, input.start_year)
 
-  }
+  assertPaymentMethod(input.payment_method)
 
   if (input.duration_months !== null && input.duration_months <= 0) {
 
@@ -580,11 +601,11 @@ export async function addRecurring(input: AddRecurringInput) {
 
   }
 
-  if (!(input.value >= 0)) {
+  assertMoney(input.value, 'Valor')
 
-    throw new Error('Valor invalido.')
+  assertMonthYear(input.start_month, input.start_year)
 
-  }
+  assertPaymentMethod(input.payment_method)
 
   if (input.duration_months !== null && input.duration_months <= 0) {
 
@@ -770,50 +791,37 @@ async function autofillForBudget(budget_id: string) {
 
   }
 
-  // Para cada recorrente, busca o valor da despesa do mês anterior (se houver)
-  const rows: Array<{
-    budget_id: string
-    category: string
-    name: string
-    value: number
-    recurring_id: string
-    payment_method: string | null
-  }> = []
+  // Busca EM LOTE o último valor lançado de cada recorrente no mês anterior
+  // (antes era 1 query por recorrente — N+1 que deixava a criação do mês lenta).
+  const prev_values = new Map<string, number>()
 
-  for (const r of applicable) {
+  if (previous) {
 
-    let value = Number(r.value)
+    const prev = await supabase
+      .from('expenses')
+      .select('recurring_id,value')
+      .eq('budget_id', previous.id)
+      .in('recurring_id', applicable.map((r) => r.id))
+      .order('created_at', { ascending: true })
 
-    if (previous) {
+    for (const row of prev.data ?? []) {
 
-      const prev = await supabase
-        .from('expenses')
-        .select('value')
-        .eq('budget_id', previous.id)
-        .eq('recurring_id', r.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-      if (prev.data) {
-
-        value = Number(prev.data.value)
-
-      }
+      // ordem ascendente: a última ocorrência sobrescreve as anteriores
+      prev_values.set(row.recurring_id as string, Number(row.value))
 
     }
 
-    rows.push({
-      budget_id,
-      category: r.category,
-      name: r.name,
-      value,
-      recurring_id: r.id,
-      payment_method: r.payment_method ?? null
-
-    })
-
   }
+
+  const rows = applicable.map((r) => ({
+    budget_id,
+    category: r.category,
+    name: r.name,
+    value: prev_values.get(r.id) ?? Number(r.value),
+    recurring_id: r.id,
+    payment_method: r.payment_method ?? null
+
+  }))
 
   const { error } = await supabase.from('expenses').insert(rows)
 

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
+import { Donut } from '@/components/ui/donut'
 
 import type { CategoryWithPct } from '@/lib/types'
 
@@ -53,43 +53,7 @@ export function ExpensesDonut({ categories, totals }: Props) {
 
           {has_data ? (
 
-            <ResponsiveContainer>
-
-              <PieChart>
-
-                <Pie
-                  data={data}
-                  dataKey='value'
-                  nameKey='name'
-                  innerRadius={60}
-                  outerRadius={96}
-                  stroke='none'
-                  paddingAngle={1.5}
-                >
-                  {data.map((d, i) => (
-                    <Cell key={i} fill={d.value > 0 ? d.color : '#374151'} />
-
-                  ))}
-                </Pie>
-
-                <Tooltip
-                  cursor={false}
-                  contentStyle={{
-                    background: '#1F2937',
-                    border: '1px solid #4B5563',
-                    borderRadius: 8,
-                    fontSize: 12,
-                    color: '#F3F4F6'
-
-                  }}
-                  itemStyle={{ color: '#F3F4F6' }}
-                  labelStyle={{ color: '#F3F4F6' }}
-                  formatter={(v: number) => format(v)}
-                />
-
-              </PieChart>
-
-            </ResponsiveContainer>
+            <Donut data={data} inner_radius={62} outer_radius={96} format={format} />
 
           ) : (
 

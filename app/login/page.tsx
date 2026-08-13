@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 
 import { Input, Label } from '@/components/ui/input'
 
-import { BrandMark } from '@/components/shell/brand-mark'
+import { ThemeToggle } from '@/components/shell/theme-toggle'
 
 type Mode = 'signin' | 'signup'
 
@@ -99,19 +99,17 @@ export default function LoginPage() {
   }
 
   return (
-    <main className='flex min-h-screen items-center justify-center px-6 py-10'>
+    <main className='relative flex min-h-screen items-center justify-center px-6 py-10'>
+
+      <div className='absolute right-4 top-4'>
+        <ThemeToggle />
+      </div>
 
       <div className='w-full max-w-sm'>
 
-        <div className='mb-8 flex flex-col items-center gap-3 text-center'>
+        <div className='mb-8 flex flex-col items-center gap-2 text-center'>
 
-          <div className='flex h-14 w-14 items-center justify-center rounded-2xl bg-brand text-bg-900 shadow-card'>
-
-            <BrandMark className='h-7 w-7' />
-
-          </div>
-
-          <h1 className='font-display text-2xl font-semibold text-text-50'>
+          <h1 className='font-display text-[26px] font-semibold tracking-[-0.015em] text-text-50'>
             Household Wallet
           </h1>
 
@@ -131,7 +129,7 @@ export default function LoginPage() {
             className={
               'h-9 rounded-lg text-sm font-medium transition ' +
               (mode === 'signin'
-                ? 'bg-brand text-bg-900 shadow-card'
+                ? 'bg-brand text-brand-ink shadow-card'
                 : 'text-text-300 hover:text-text-50')
             }
           >
@@ -144,7 +142,7 @@ export default function LoginPage() {
             className={
               'h-9 rounded-lg text-sm font-medium transition ' +
               (mode === 'signup'
-                ? 'bg-brand text-bg-900 shadow-card'
+                ? 'bg-brand text-brand-ink shadow-card'
                 : 'text-text-300 hover:text-text-50')
             }
           >

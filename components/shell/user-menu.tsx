@@ -15,8 +15,9 @@ import {
 } from '@/components/ui/tooltip'
 
 // Mostra a inicial do usuario logado e um botao de sair, no rodape da sidebar.
+// Em `compact` (dock mobile) mostra apenas o botao de sair.
 
-export function UserMenu() {
+export function UserMenu({ compact }: { compact?: boolean }) {
 
   const [name, setName] = useState<string>('')
 
@@ -48,6 +49,35 @@ export function UserMenu() {
 
   }
 
+  const logout_button = (
+    <Tooltip>
+
+      <TooltipTrigger asChild>
+
+        <button
+          type='button'
+          onClick={handleLogout}
+          disabled={pending}
+          aria-label='Sair'
+          className='flex h-9 w-9 items-center justify-center rounded-xl text-text-300 transition hover:bg-bg-800 hover:text-negative disabled:opacity-50'
+        >
+          <LogOut className='h-5 w-5' />
+        </button>
+
+      </TooltipTrigger>
+
+      <TooltipContent side={compact ? 'top' : 'right'}>Sair</TooltipContent>
+
+    </Tooltip>
+
+  )
+
+  if (compact) {
+
+    return logout_button
+
+  }
+
   return (
     <div className='flex flex-col items-center gap-3'>
 
@@ -65,25 +95,7 @@ export function UserMenu() {
 
       </Tooltip>
 
-      <Tooltip>
-
-        <TooltipTrigger asChild>
-
-          <button
-            type='button'
-            onClick={handleLogout}
-            disabled={pending}
-            aria-label='Sair'
-            className='flex h-9 w-9 items-center justify-center rounded-xl text-text-300 transition hover:bg-bg-800 hover:text-negative disabled:opacity-50'
-          >
-            <LogOut className='h-5 w-5' />
-          </button>
-
-        </TooltipTrigger>
-
-        <TooltipContent side='right'>Sair</TooltipContent>
-
-      </Tooltip>
+      {logout_button}
 
     </div>
 

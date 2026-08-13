@@ -186,7 +186,7 @@ export function AddExpenseForm({
           className={cn(
             'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition',
             mode === 'avulsa'
-              ? 'bg-brand text-bg-900'
+              ? 'bg-brand text-brand-ink'
               : 'text-text-300 hover:text-text-50'
 
           )}
@@ -201,7 +201,7 @@ export function AddExpenseForm({
           className={cn(
             'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition',
             mode === 'recorrente'
-              ? 'bg-brand text-bg-900'
+              ? 'bg-brand text-brand-ink'
               : 'text-text-300 hover:text-text-50'
 
           )}
@@ -252,7 +252,7 @@ export function AddExpenseForm({
                 className={cn(
                   'flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-semibold transition',
                   duration_mode === 'indef'
-                    ? 'bg-brand text-bg-900'
+                    ? 'bg-brand text-brand-ink'
                     : 'text-text-300 hover:text-text-50'
 
                 )}
@@ -266,7 +266,7 @@ export function AddExpenseForm({
                 className={cn(
                   'flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-semibold transition',
                   duration_mode === 'parcels'
-                    ? 'bg-brand text-bg-900'
+                    ? 'bg-brand text-brand-ink'
                     : 'text-text-300 hover:text-text-50'
 
                 )}

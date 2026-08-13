@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils'
 
 import { usePrivacy } from '@/components/shell/privacy-provider'
 
+import { useToast } from '@/components/ui/toast-provider'
+
 type Props = {
 
   budget_id: string
@@ -27,6 +29,8 @@ type Props = {
 export function IncomeInput({ budget_id, initial }: Props) {
 
   const { hidden } = usePrivacy()
+
+  const toast = useToast()
 
   const [value, setValue] = useState<string>(initial ? formatBRLPlain(initial) : '')
 
@@ -55,6 +59,14 @@ export function IncomeInput({ budget_id, initial }: Props) {
 
     }
 
+    if (current_numeric < 0) {
+
+      toast.error('A renda não pode ser negativa.')
+
+      return
+
+    }
+
     startTransition(async () => {
 
       try {
@@ -71,7 +83,10 @@ export function IncomeInput({ budget_id, initial }: Props) {
 
       } catch (e) {
 
-        console.error(e)
+        toast.error(
+          e instanceof Error ? e.message : 'Não foi possível salvar a renda. Tente novamente.'
+
+        )
 
       }
 
@@ -135,7 +150,7 @@ export function IncomeInput({ budget_id, initial }: Props) {
           className={cn(
             'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition',
             dirty && !hidden
-              ? 'bg-brand text-bg-900 hover:bg-brand-dark shadow-card'
+              ? 'bg-brand text-brand-ink hover:bg-brand-dark shadow-card'
               : just_saved && !hidden
               ? 'bg-positive/20 text-positive-soft'
               : 'bg-bg-800 text-text-300 cursor-not-allowed'
