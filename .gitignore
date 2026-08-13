@@ -5,3 +5,11 @@ node_modules
 .DS_Store
 .turbo
 .vercel
+
+# Cache incremental do TypeScript — nao versionar. Se commitado, o nixpacks
+# tenta montar um cache (diretorio) por cima do arquivo e o build quebra com
+# "not a directory".
+tsconfig.tsbuildinfo
+
+# Config local do Claude Code
+.claude/
