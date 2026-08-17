@@ -348,7 +348,7 @@ export function FinancingsManager({ items, categories }: Props) {
             <div className='grid gap-3 md:grid-cols-2'>
 
               <div>
-                <Label>Nome</Label>
+                <Label required>Nome</Label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -357,7 +357,7 @@ export function FinancingsManager({ items, categories }: Props) {
               </div>
 
               <div>
-                <Label>Quantidade de parcelas</Label>
+                <Label required>Quantidade de parcelas</Label>
                 <Input
                   type='number'
                   min={1}
@@ -368,7 +368,7 @@ export function FinancingsManager({ items, categories }: Props) {
               </div>
 
               <div>
-                <Label>Valor base da parcela</Label>
+                <Label required>Valor base da parcela</Label>
                 <Input
                   value={value}
                   inputMode='decimal'
@@ -381,7 +381,7 @@ export function FinancingsManager({ items, categories }: Props) {
               </div>
 
               <div>
-                <Label>Taxa (% a.m. opcional)</Label>
+                <Label>Taxa (% a.m.)</Label>
                 <Input
                   value={rate}
                   inputMode='decimal'
@@ -401,7 +401,7 @@ export function FinancingsManager({ items, categories }: Props) {
               </div>
 
               <div>
-                <Label>Valor total financiado (opcional)</Label>
+                <Label>Valor total financiado</Label>
                 <Input
                   value={totalValue}
                   inputMode='decimal'
@@ -639,7 +639,7 @@ export function FinancingsManager({ items, categories }: Props) {
             </p>
 
             <div className='mt-4'>
-              <Label>Valor a pagar</Label>
+              <Label required>Valor a pagar</Label>
               <Input
                 value={pay_value}
                 inputMode='decimal'

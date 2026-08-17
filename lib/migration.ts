@@ -4,7 +4,17 @@ import path from 'path'
 
 let cached_sql: string | null = null
 
-const FILES = ['migration_v2.sql', 'migration_v3.sql', 'migration_v4.sql', 'migration_v5.sql', 'migration_v6.sql', 'migration_v7.sql']
+const FILES = [
+  'migration_v2.sql',
+  'migration_v3.sql',
+  'migration_v4.sql',
+  'migration_v5.sql',
+  'migration_v6.sql',
+  'migration_v7.sql',
+  'migration_v8.sql',
+  'migration_v9.sql',
+  'migration_v10.sql'
+]
 
 export function readMigrationSQL(): string {
 

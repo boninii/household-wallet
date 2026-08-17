@@ -215,7 +215,7 @@ export function AddExpenseForm({
       <div className='grid gap-3 md:grid-cols-2'>
 
         <div>
-          <Label>Nome</Label>
+          <Label required>Nome</Label>
           <Input
             value={name}
             onChange={(ev) => setName(ev.target.value)}
@@ -224,7 +224,7 @@ export function AddExpenseForm({
         </div>
 
         <div>
-          <Label>Valor</Label>
+          <Label required>Valor</Label>
           <MoneyInput
             value={value}
             onChange={(ev) => setValue(ev.target.value)}

@@ -470,7 +470,7 @@ export function CategoriasPage({ budget, categories, allocations }: Props) {
               <div className='flex items-end gap-3'>
 
                 <div className='flex-1'>
-                  <Label>Nome</Label>
+                  <Label required>Nome</Label>
                   <Input
                     value={new_label}
                     onChange={(e) => setNewLabel(e.target.value)}

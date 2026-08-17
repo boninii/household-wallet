@@ -10,6 +10,12 @@ import { Button } from '@/components/ui/button'
 
 import { Input, Label } from '@/components/ui/input'
 
+import {
+  PASSWORD_MIN,
+  PasswordInput,
+  isPasswordAcceptable
+} from '@/components/ui/password-input'
+
 import { ThemeToggle } from '@/components/shell/theme-toggle'
 
 type Mode = 'signin' | 'signup'
@@ -57,6 +63,17 @@ export default function LoginPage() {
         router.replace('/')
 
         router.refresh()
+
+        return
+
+      }
+
+      if (!isPasswordAcceptable(password)) {
+
+        setError(
+          `Senha fraca: use ao menos ${PASSWORD_MIN} caracteres e combine maiúsculas, números ou símbolos.`
+
+        )
 
         return
 
@@ -156,7 +173,7 @@ export default function LoginPage() {
           {mode === 'signup' && (
             <div>
 
-              <Label htmlFor='name'>Nome</Label>
+              <Label htmlFor='name' required>Nome</Label>
 
               <Input
                 id='name'
@@ -171,7 +188,7 @@ export default function LoginPage() {
 
           <div>
 
-            <Label htmlFor='email'>Email</Label>
+            <Label htmlFor='email' required>Email</Label>
 
             <Input
               id='email'
@@ -186,15 +203,14 @@ export default function LoginPage() {
 
           <div>
 
-            <Label htmlFor='password'>Senha</Label>
+            <Label htmlFor='password' required>Senha</Label>
 
-            <Input
+            <PasswordInput
               id='password'
-              type='password'
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder='••••••••'
+              onChange={setPassword}
               autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+              show_strength={mode === 'signup'}
             />
 
           </div>

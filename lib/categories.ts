@@ -71,7 +71,7 @@ export const DEFAULT_CATEGORIES_FALLBACK: Category[] = [
   {
     id: 'default-liberdade',
     slug: 'liberdade',
-    label: 'Investir',
+    label: 'Investimento',
     color: '#6366F1',
     sort_order: 50,
     is_default: true,

@@ -93,9 +93,9 @@ export async function signUp(
 
   }
 
-  if (password.length < 6) {
+  if (password.length < 8) {
 
-    return { error: 'A senha precisa ter ao menos 6 caracteres.' }
+    return { error: 'A senha precisa ter ao menos 8 caracteres.' }
 
   }
 
@@ -168,6 +168,116 @@ export async function signUp(
   }
 
   revalidatePath('/', 'layout')
+
+  return { error: null }
+
+}
+
+// =========================================================================
+// CONTA
+// =========================================================================
+
+export type AccountInfo = {
+
+  email: string
+
+  full_name: string
+
+}
+
+export async function getAccount(): Promise<AccountInfo | null> {
+
+  const supabase = await getSupabase()
+
+  const { data, error } = await supabase.auth.getUser()
+
+  if (error || !data.user) {
+
+    return null
+
+  }
+
+  const meta = data.user.user_metadata as { full_name?: string } | undefined
+
+  return {
+    email: data.user.email ?? '',
+    full_name: meta?.full_name ?? ''
+
+  }
+
+}
+
+export async function updateName(name: string): Promise<AuthResult> {
+
+  if (!name.trim()) {
+
+    return { error: 'Informe seu nome.' }
+
+  }
+
+  const supabase = await getSupabase()
+
+  const { error } = await supabase.auth.updateUser({
+    data: { full_name: name.trim() }
+
+  })
+
+  if (error) {
+
+    return { error: error.message }
+
+  }
+
+  revalidatePath('/', 'layout')
+
+  return { error: null }
+
+}
+
+export async function updatePassword(
+  current_password: string,
+  new_password: string
+): Promise<AuthResult> {
+
+  if (new_password.length < 8) {
+
+    return { error: 'A nova senha precisa ter ao menos 8 caracteres.' }
+
+  }
+
+  const supabase = await getSupabase()
+
+  const { data } = await supabase.auth.getUser()
+
+  const email = data.user?.email
+
+  if (!email) {
+
+    return { error: 'Sessão expirada. Entre novamente.' }
+
+  }
+
+  // Confirma a senha atual antes de trocar — o updateUser sozinho nao pede,
+  // entao qualquer sessao aberta poderia trocar a senha sem saber a antiga.
+  const check = await supabase.auth.signInWithPassword({
+    email,
+    password: current_password
+
+  })
+
+  if (check.error) {
+
+    return { error: 'Senha atual incorreta.' }
+
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: new_password })
+
+  if (error) {
+
+    return { error: error.message }
+
+  }
 
   return { error: null }
 

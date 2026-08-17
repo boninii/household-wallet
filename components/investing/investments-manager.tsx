@@ -32,7 +32,7 @@ import { Button } from '@/components/ui/button'
 
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 
-import { Input, Label } from '@/components/ui/input'
+import { Input, Label, Select } from '@/components/ui/input'
 
 import { PageHeader } from '@/components/budget/page-header'
 
@@ -336,6 +336,21 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
     return { grand_brl, by_kind, platform_count: platforms.size }
   }, [items, rate])
 
+  // Opcoes do subtipo: sugestoes do tipo atual + o valor ja gravado (cobre
+  // registros antigos digitados a mao e o tipo "Outros", que nao tem sugestao).
+  const subtype_options = useMemo(() => {
+
+    const list = [...SUBTYPE_SUGGESTIONS[kind]]
+
+    if (subtype && !list.includes(subtype)) {
+
+      list.unshift(subtype)
+
+    }
+
+    return list
+  }, [kind, subtype])
+
   // fatias do grafico de divisao, ja na ordem de KINDS e sem tipos zerados
   const chart_data = useMemo(() => {
 
@@ -502,28 +517,29 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
             <div className='grid gap-3 md:grid-cols-2'>
 
               <div>
-                <Label>Plataforma</Label>
+                <Label required>Plataforma</Label>
                 <Input
                   value={platform}
                   onChange={(e) => setPlatform(e.target.value)}
-                  placeholder='XP, NuInvest, Binance, IBKR...'
+                  placeholder='XP, BTG, AUVP, Binance...'
                 />
               </div>
 
               <div>
                 <Label>Subtipo</Label>
-                <Input
+                <Select
                   value={subtype}
                   onChange={(e) => setSubtype(e.target.value)}
-                  placeholder={SUBTYPE_SUGGESTIONS[kind][0] ?? 'Detalhe opcional'}
-                  list={`subtypes-${kind}`}
-                />
-                <datalist id={`subtypes-${kind}`}>
-                  {SUBTYPE_SUGGESTIONS[kind].map((s) => (
-                    <option key={s} value={s} />
+                >
+                  <option value=''>
+                    {subtype_options.length > 0 ? 'Selecione…' : 'Sem subtipo'}
+                  </option>
+
+                  {subtype_options.map((s) => (
+                    <option key={s} value={s}>{s}</option>
 
                   ))}
-                </datalist>
+                </Select>
               </div>
 
               <div>
@@ -565,7 +581,7 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
               </div>
 
               <div>
-                <Label>Valor aplicado</Label>
+                <Label required>Valor aplicado</Label>
                 <Input
                   value={value}
                   inputMode='decimal'
@@ -575,13 +591,12 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
               </div>
 
               <div className='md:col-span-2'>
-                <Label>Taxa / rendimento (opcional)</Label>
+                <Label>Taxa / rendimento</Label>
                 <div className='flex flex-col gap-2 sm:flex-row sm:items-stretch'>
                   <Input
                     value={interest}
                     inputMode='decimal'
                     onChange={(e) => setInterest(e.target.value)}
-                    placeholder='100 (= 100% CDI), 12,5 (% a.a.), etc.'
                     className='sm:w-48'
                   />
                   <div className='flex flex-wrap items-center gap-1.5'>

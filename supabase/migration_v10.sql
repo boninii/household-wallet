@@ -1,24 +1,15 @@
--- household-wallet :: migration v9 — corrige 500 no cadastro (signup)
--- Rode APOS a migration_v8. Idempotente.
+-- household-wallet :: migration v10
+-- Rode APOS a migration_v9. Idempotente.
 --
--- CAUSA RAIZ: a coluna categories.is_saving nunca foi criada neste projeto
--- (a migration_v6 foi pulada). O trigger handle_new_user (criado na v8) insere
--- em is_saving ao semear as categorias padrao do novo usuario -> o insert falha
--- -> o Supabase aborta a criacao do usuario -> o signup retorna HTTP 500.
---
--- FIX: (1) cria a coluna is_saving que faltava; (2) blinda o trigger para que,
--- se a semeadura falhar por qualquer motivo, o cadastro AINDA aconteca e o
--- motivo real fique logado como WARNING nos Postgres Logs (sem derrubar tudo).
-
--- 1. Coluna que faltava (conteudo da migration_v6)
-alter table public.categories
-  add column if not exists is_saving boolean not null default false;
+-- 1. Renomeia a categoria padrao "Investir" -> "Investimento" (slug 'liberdade'
+--    permanece, por compatibilidade com as despesas ja lancadas).
+-- 2. Atualiza o seed do trigger para novos cadastros usarem o nome novo.
 
 update public.categories
-  set is_saving = true
-  where slug = 'liberdade' and is_saving = false;
+  set label = 'Investimento'
+  where slug = 'liberdade'
+  and label = 'Investir';
 
--- 2. Trigger de seed a prova de falhas
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql

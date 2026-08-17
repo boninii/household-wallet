@@ -2,7 +2,13 @@
 
 import { useEffect, useState, useTransition } from 'react'
 
+import Link from 'next/link'
+
+import { usePathname } from 'next/navigation'
+
 import { LogOut } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
 
 import { getSupabaseBrowser } from '@/lib/supabase-browser'
 
@@ -18,6 +24,8 @@ import {
 // Em `compact` (dock mobile) mostra apenas o botao de sair.
 
 export function UserMenu({ compact }: { compact?: boolean }) {
+
+  const path = usePathname()
 
   const [name, setName] = useState<string>('')
 
@@ -85,9 +93,20 @@ export function UserMenu({ compact }: { compact?: boolean }) {
 
         <TooltipTrigger asChild>
 
-          <div className='flex h-9 w-9 items-center justify-center rounded-full bg-bg-800 text-sm font-semibold text-text-100 ring-1 ring-bg-700'>
+          <Link
+            href='/conta'
+            prefetch={true}
+            aria-label='Minha conta'
+            className={cn(
+              'flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ring-1 transition',
+              path.startsWith('/conta')
+                ? 'bg-brand text-brand-ink ring-brand'
+                : 'bg-bg-800 text-text-100 ring-bg-700 hover:bg-bg-700 hover:text-text-50'
+
+            )}
+          >
             {initial}
-          </div>
+          </Link>
 
         </TooltipTrigger>
 

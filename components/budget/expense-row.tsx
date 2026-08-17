@@ -177,7 +177,7 @@ export function ExpenseRow({ expense, on_updated, on_deleted }: Props) {
           <div className='grid gap-3 md:grid-cols-[1fr_180px]'>
 
             <div>
-              <Label>Nome</Label>
+              <Label required>Nome</Label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -186,7 +186,7 @@ export function ExpenseRow({ expense, on_updated, on_deleted }: Props) {
             </div>
 
             <div>
-              <Label>Valor</Label>
+              <Label required>Valor</Label>
               <MoneyInput
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
@@ -196,7 +196,7 @@ export function ExpenseRow({ expense, on_updated, on_deleted }: Props) {
           </div>
 
           <div>
-            <Label>Nota (opcional)</Label>
+            <Label>Nota</Label>
             <Input
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
