@@ -5,7 +5,9 @@ import { createServerClient } from '@supabase/ssr'
 // Renova a sessao a cada request e protege as rotas: quem nao esta logado vai
 // para /login; quem esta logado nao fica preso em /login.
 
-const PUBLIC_PATHS = ['/login', '/auth']
+// '/w' = carteira compartilhada por link (visitante, sem login).
+// '/convite' = tela de aceite; ela mesma pede login quando necessario.
+const PUBLIC_PATHS = ['/login', '/register', '/auth', '/w/', '/convite/']
 
 export async function middleware(request: NextRequest) {
 
@@ -75,7 +77,7 @@ export async function middleware(request: NextRequest) {
 
   }
 
-  if (user && path.startsWith('/login')) {
+  if (user && (path.startsWith('/login') || path.startsWith('/register'))) {
 
     const home_url = request.nextUrl.clone()
 

@@ -11,9 +11,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const path = usePathname()
 
-  const is_auth = path.startsWith('/login')
+  // Telas sem o shell do app: login e as paginas publicas de compartilhamento.
+  const is_bare =
+    path.startsWith('/login') ||
+    path.startsWith('/register') ||
+    path.startsWith('/w/') ||
+    path.startsWith('/convite/')
 
-  if (is_auth) {
+  if (is_bare) {
 
     return <>{children}</>
 

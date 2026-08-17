@@ -10,7 +10,8 @@ import {
   BarChart3,
   Layers,
   LineChart,
-  ListChecks
+  ListChecks,
+  Share2
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -27,6 +28,8 @@ import { ThemeToggle } from './theme-toggle'
 
 import { UserMenu } from './user-menu'
 
+import { WalletSwitcher } from './wallet-switcher'
+
 const items = [
 
   { href: '/', label: 'Dashboard', icon: BarChart3 },
@@ -35,7 +38,9 @@ const items = [
 
   { href: '/categorias', label: 'Categorias', icon: Layers },
 
-  { href: '/investimentos', label: 'Investimentos', icon: LineChart }
+  { href: '/investimentos', label: 'Investimentos', icon: LineChart },
+
+  { href: '/compartilhar', label: 'Compartilhar', icon: Share2 }
 
 ]
 
@@ -115,6 +120,8 @@ export function Sidebar() {
         </div>
 
         <div className='flex flex-col items-center gap-2.5'>
+
+          <WalletSwitcher />
 
           <ThemeToggle />
 

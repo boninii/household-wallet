@@ -34,6 +34,8 @@ import { Input, Label } from '@/components/ui/input'
 
 import { useConfirm } from '@/components/ui/confirm-provider'
 
+import { FormError } from '@/components/ui/form-error'
+
 import { PageHeader } from '@/components/budget/page-header'
 
 type Props = {
@@ -438,7 +440,7 @@ export function FinancingsManager({ items, categories }: Props) {
             <div className='flex items-center justify-between gap-3 pt-2'>
 
               {error ? (
-                <span className='text-xs text-negative-soft'>{error}</span>
+                <FormError>{error}</FormError>
               ) : (
                 <span className='text-xs text-text-300'>
                   Cada parcela paga vira uma despesa no mês corrente da categoria escolhida.
@@ -650,7 +652,7 @@ export function FinancingsManager({ items, categories }: Props) {
             </div>
 
             {error && (
-              <p className='mt-2 text-xs text-negative-soft'>{error}</p>
+              <FormError className='mt-2'>{error}</FormError>
 
             )}
 

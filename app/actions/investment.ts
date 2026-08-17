@@ -6,6 +6,8 @@ import { getSupabase } from '@/lib/supabase'
 
 import { assertMoney } from '@/lib/validate'
 
+import { getActiveWalletId } from '@/lib/wallet'
+
 import type {
   Investment,
   InvestmentCurrency,
@@ -140,9 +142,12 @@ export async function listInvestments(): Promise<{
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   const { data, error } = await supabase
     .from('investments')
     .select('*')
+    .eq('user_id', wallet_id)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -167,7 +172,11 @@ export async function createInvestment(input: InvestmentInput) {
 
   const supabase = await getSupabase()
 
-  const { error } = await supabase.from('investments').insert(toRow(input))
+  const wallet_id = await getActiveWalletId()
+
+  const { error } = await supabase
+    .from('investments')
+    .insert({ ...toRow(input), user_id: wallet_id })
 
   if (error) {
 

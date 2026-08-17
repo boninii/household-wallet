@@ -6,45 +6,22 @@ import { Check, Eye, EyeOff } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
+import { PASSWORD_RULES } from '@/lib/validate'
+
 import { Input } from './input'
 
 // Campo de senha com botao de mostrar/ocultar. Com `show_strength`, exibe
-// tambem a barra de forca e a lista de requisitos (usado no cadastro).
+// a lista de requisitos — todos obrigatorios. A regra vive em lib/validate
+// para o servidor validar exatamente a mesma coisa.
 
-export const PASSWORD_MIN = 8
+function checkPassword(value: string) {
 
-export type PasswordCheck = {
+  return PASSWORD_RULES.map((r) => ({
+    key: r.key,
+    label: r.label,
+    ok: r.test(value)
 
-  key: string
-
-  label: string
-
-  ok: boolean
-
-}
-
-export function checkPassword(value: string): PasswordCheck[] {
-
-  return [
-    { key: 'len', label: `Ao menos ${PASSWORD_MIN} caracteres`, ok: value.length >= PASSWORD_MIN },
-    { key: 'case', label: 'Maiúscula e minúscula', ok: /[a-z]/.test(value) && /[A-Z]/.test(value) },
-    { key: 'num', label: 'Um número', ok: /\d/.test(value) },
-    { key: 'sym', label: 'Um símbolo', ok: /[^A-Za-z0-9]/.test(value) }
-
-  ]
-
-}
-
-// Senha aceita: tamanho minimo + pelo menos 2 dos outros criterios.
-export function isPasswordAcceptable(value: string): boolean {
-
-  const checks = checkPassword(value)
-
-  const len_ok = checks[0].ok
-
-  const others = checks.slice(1).filter((c) => c.ok).length
-
-  return len_ok && others >= 2
+  }))
 
 }
 
@@ -64,17 +41,7 @@ type Props = {
 
 }
 
-const LEVELS = [
-
-  { label: 'fraca', color: 'bg-negative-soft', text: 'text-negative-soft' },
-
-  { label: 'razoável', color: 'bg-brand', text: 'text-brand' },
-
-  { label: 'boa', color: 'bg-brand', text: 'text-brand' },
-
-  { label: 'forte', color: 'bg-positive-soft', text: 'text-positive-soft' }
-
-]
+const TOTAL_RULES = PASSWORD_RULES.length
 
 export function PasswordInput({
   id,
@@ -91,7 +58,13 @@ export function PasswordInput({
 
   const score = checks.filter((c) => c.ok).length
 
-  const level = LEVELS[Math.max(0, score - 1)] ?? LEVELS[0]
+  // Todos os requisitos sao obrigatorios, entao a barra mostra progresso —
+  // nao "forca" — e so fica verde quando a senha esta valida.
+  const complete = score === TOTAL_RULES
+
+  const level = complete
+    ? { label: 'senha válida', color: 'bg-positive-soft', text: 'text-positive-soft' }
+    : { label: `${score}/${TOTAL_RULES}`, color: 'bg-brand', text: 'text-text-300' }
 
   return (
     <div>

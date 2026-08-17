@@ -34,6 +34,8 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { Input, Label, Select } from '@/components/ui/input'
 
+import { FormError } from '@/components/ui/form-error'
+
 import { PageHeader } from '@/components/budget/page-header'
 
 const KINDS: Array<{ key: InvestmentKind; label: string; color: string }> = [
@@ -664,7 +666,7 @@ export function InvestmentsManager({ items, usd_brl_rate }: Props) {
             <div className='flex items-center justify-between gap-3 pt-2'>
 
               {error ? (
-                <span className='text-xs text-negative-soft'>{error}</span>
+                <FormError>{error}</FormError>
               ) : (
                 <span className='text-xs text-text-300'>
                   Valores em USD usam a cotação atual para somar no patrimonio total.

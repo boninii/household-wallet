@@ -41,6 +41,8 @@ import { Slider } from '@/components/ui/slider'
 
 import { useConfirm } from '@/components/ui/confirm-provider'
 
+import { FormError } from '@/components/ui/form-error'
+
 import { PageHeader } from './page-header'
 
 import { ColorPicker } from './color-picker'
@@ -661,7 +663,7 @@ export function CategoriasPage({ budget, categories, allocations }: Props) {
       <div className='flex flex-wrap items-center justify-end gap-3 pb-6'>
 
         {error && (
-          <span className='text-sm text-negative-soft'>{error}</span>
+          <FormError>{error}</FormError>
 
         )}
 

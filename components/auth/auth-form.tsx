@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from 'react'
 
+import Link from 'next/link'
+
 import { useRouter } from 'next/navigation'
 
 import { signIn, signUp } from '@/app/actions/auth'
@@ -10,21 +12,52 @@ import { Button } from '@/components/ui/button'
 
 import { Input, Label } from '@/components/ui/input'
 
-import {
-  PASSWORD_MIN,
-  PasswordInput,
-  isPasswordAcceptable
-} from '@/components/ui/password-input'
+import { FormError } from '@/components/ui/form-error'
 
-import { ThemeToggle } from '@/components/shell/theme-toggle'
+import { PasswordInput } from '@/components/ui/password-input'
+
+import {
+  PASSWORD_REQUIREMENTS_MESSAGE,
+  isStrongPassword
+} from '@/lib/validate'
 
 type Mode = 'signin' | 'signup'
 
-export default function LoginPage() {
+// Formulario unico de login/cadastro. As rotas /login e /register renderizam
+// o mesmo componente, mudando apenas a aba inicial.
+
+type Props = {
+
+  initial_mode?: Mode
+
+  // Vem do servidor (searchParams da rota). Ler aqui com useSearchParams faria
+  // o componente suspender a cada navegacao entre /login e /register — e, sem
+  // fallback no Suspense, a tela piscava em branco.
+  next_param?: string
+
+}
+
+export function AuthForm({ initial_mode = 'signin', next_param }: Props) {
 
   const router = useRouter()
 
-  const [mode, setMode] = useState<Mode>('signin')
+  // Para onde ir depois de entrar. Aceita apenas caminho relativo — evita
+  // redirecionar para fora do app (open redirect).
+  const raw_next = next_param ?? ''
+
+  const next =
+    raw_next.startsWith('/') && !raw_next.startsWith('//') ? raw_next : '/'
+
+  // O modo vem da rota (/login ou /register), nao de estado — a URL e a
+  // fonte da verdade.
+  const mode = initial_mode
+
+  // Mantem o ?next= ao alternar entre entrar e cadastrar.
+  function withNext(path: string) {
+
+    return raw_next ? `${path}?next=${encodeURIComponent(next)}` : path
+
+  }
 
   const [name, setName] = useState('')
 
@@ -60,20 +93,9 @@ export default function LoginPage() {
 
         }
 
-        router.replace('/')
+        router.replace(next)
 
         router.refresh()
-
-        return
-
-      }
-
-      if (!isPasswordAcceptable(password)) {
-
-        setError(
-          `Senha fraca: use ao menos ${PASSWORD_MIN} caracteres e combine maiúsculas, números ou símbolos.`
-
-        )
 
         return
 
@@ -97,7 +119,7 @@ export default function LoginPage() {
 
       }
 
-      router.replace('/')
+      router.replace(next)
 
       router.refresh()
 
@@ -105,24 +127,19 @@ export default function LoginPage() {
 
   }
 
-  function switchMode(next: Mode) {
+  // Botao so habilita quando o formulario esta valido — os requisitos de senha
+  // ja aparecem no checklist, entao nao precisa virar mensagem de erro.
+  const email_ok = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())
 
-    setMode(next)
+  const can_submit =
+    mode === 'signin'
+      ? email.trim().length > 0 && password.length > 0
+      : name.trim().length > 0 && email_ok && isStrongPassword(password)
 
-    setError(null)
-
-    setInfo(null)
-
-  }
-
+  // O <main>, a largura e o ThemeToggle vivem no layout do grupo (auth) —
+  // assim nao remontam ao alternar entre /login e /register.
   return (
-    <main className='relative flex min-h-screen items-center justify-center px-6 py-10'>
-
-      <div className='absolute right-4 top-4'>
-        <ThemeToggle />
-      </div>
-
-      <div className='w-full max-w-sm'>
+    <>
 
         <div className='mb-8 flex flex-col items-center gap-2 text-center'>
 
@@ -138,33 +155,36 @@ export default function LoginPage() {
 
         </div>
 
+        {/* Abas sao links de verdade: /login e /register sao os enderecos
+            oficiais de cada acao, entao a URL sempre reflete a tela. Preserva
+            o ?next= para nao perder o destino (ex: voltar para um convite). */}
         <div className='mb-6 grid grid-cols-2 gap-1 rounded-xl bg-bg-900/60 p-1 ring-1 ring-bg-800'>
 
-          <button
-            type='button'
-            onClick={() => switchMode('signin')}
+          <Link
+            href={withNext('/login')}
+            prefetch
             className={
-              'h-9 rounded-lg text-sm font-medium transition ' +
+              'flex h-9 items-center justify-center rounded-lg text-sm font-medium transition ' +
               (mode === 'signin'
                 ? 'bg-brand text-brand-ink shadow-card'
                 : 'text-text-300 hover:text-text-50')
             }
           >
             Entrar
-          </button>
+          </Link>
 
-          <button
-            type='button'
-            onClick={() => switchMode('signup')}
+          <Link
+            href={withNext('/register')}
+            prefetch
             className={
-              'h-9 rounded-lg text-sm font-medium transition ' +
+              'flex h-9 items-center justify-center rounded-lg text-sm font-medium transition ' +
               (mode === 'signup'
                 ? 'bg-brand text-brand-ink shadow-card'
                 : 'text-text-300 hover:text-text-50')
             }
           >
             Criar conta
-          </button>
+          </Link>
 
         </div>
 
@@ -215,15 +235,20 @@ export default function LoginPage() {
 
           </div>
 
-          {error && (
-            <p className='text-sm text-negative'>{error}</p>
-          )}
+          {error && <FormError>{error}</FormError>}
 
           {info && (
-            <p className='text-sm text-positive-soft'>{info}</p>
+            <p className='rounded-lg border border-positive-soft/60 bg-positive-soft/15 px-3 py-2.5 text-xs leading-snug text-positive-soft'>
+              {info}
+            </p>
           )}
 
-          <Button type='submit' size='lg' disabled={pending} className='mt-1'>
+          <Button
+            type='submit'
+            size='lg'
+            disabled={pending || !can_submit}
+            className='mt-1 text-sm'
+          >
             {pending
               ? 'Aguarde…'
               : mode === 'signin'
@@ -233,9 +258,7 @@ export default function LoginPage() {
 
         </form>
 
-      </div>
-
-    </main>
+    </>
 
   )
 

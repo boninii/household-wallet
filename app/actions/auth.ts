@@ -6,6 +6,11 @@ import { redirect } from 'next/navigation'
 
 import { getSupabase } from '@/lib/supabase'
 
+import {
+  PASSWORD_REQUIREMENTS_MESSAGE,
+  isStrongPassword
+} from '@/lib/validate'
+
 export type AuthResult = {
 
   error: string | null
@@ -93,9 +98,9 @@ export async function signUp(
 
   }
 
-  if (password.length < 8) {
+  if (!isStrongPassword(password)) {
 
-    return { error: 'A senha precisa ter ao menos 8 caracteres.' }
+    return { error: PASSWORD_REQUIREMENTS_MESSAGE }
 
   }
 
@@ -239,9 +244,9 @@ export async function updatePassword(
   new_password: string
 ): Promise<AuthResult> {
 
-  if (new_password.length < 8) {
+  if (!isStrongPassword(new_password)) {
 
-    return { error: 'A nova senha precisa ter ao menos 8 caracteres.' }
+    return { error: PASSWORD_REQUIREMENTS_MESSAGE }
 
   }
 

@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 
 import { getSupabase } from '@/lib/supabase'
 
+import { getActiveWalletId } from '@/lib/wallet'
+
 import { assertHexColor, assertLabel } from '@/lib/validate'
 
 import type { Category } from '@/lib/types'
@@ -26,9 +28,12 @@ export async function listCategories(options?: {
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   let query = supabase
     .from('categories')
     .select('*')
+    .eq('user_id', wallet_id)
     .order('sort_order', { ascending: true })
 
   if (!options?.include_archived) {
@@ -79,6 +84,8 @@ export async function createCategory(input: {
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   let base_slug = slugify(input.label)
 
   let slug = base_slug
@@ -90,6 +97,7 @@ export async function createCategory(input: {
     const existing = await supabase
       .from('categories')
       .select('id')
+      .eq('user_id', wallet_id)
       .eq('slug', slug)
       .maybeSingle()
 
@@ -114,6 +122,7 @@ export async function createCategory(input: {
   const max_order = await supabase
     .from('categories')
     .select('sort_order')
+    .eq('user_id', wallet_id)
     .order('sort_order', { ascending: false })
     .limit(1)
     .maybeSingle()
@@ -125,7 +134,8 @@ export async function createCategory(input: {
     label: input.label.trim(),
     color: input.color,
     sort_order: next_order,
-    is_default: false
+    is_default: false,
+    user_id: wallet_id
 
   })
 

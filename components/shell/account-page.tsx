@@ -16,10 +16,12 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { Input, Label } from '@/components/ui/input'
 
+import { PasswordInput } from '@/components/ui/password-input'
+
 import {
-  PasswordInput,
-  isPasswordAcceptable
-} from '@/components/ui/password-input'
+  PASSWORD_REQUIREMENTS_MESSAGE,
+  isStrongPassword
+} from '@/lib/validate'
 
 import { useToast } from '@/components/ui/toast-provider'
 
@@ -81,9 +83,9 @@ export function AccountPage({ account }: { account: AccountInfo }) {
 
     }
 
-    if (!isPasswordAcceptable(next)) {
+    if (!isStrongPassword(next)) {
 
-      toast.error('A nova senha é fraca — use ao menos 8 caracteres e combine maiúsculas, números ou símbolos.')
+      toast.error(PASSWORD_REQUIREMENTS_MESSAGE)
 
       return
 

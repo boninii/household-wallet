@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 
 import { getSupabase } from '@/lib/supabase'
 
+import { getActiveWalletId } from '@/lib/wallet'
+
 import {
   assertMoney,
   assertMonthYear,
@@ -43,9 +45,12 @@ export async function getOrCreateBudget(month: number, year: number): Promise<Mo
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   const existing = await supabase
     .from('monthly_budgets')
     .select('*')
+    .eq('user_id', wallet_id)
     .eq('month', month)
     .eq('year', year)
     .maybeSingle()
@@ -65,7 +70,7 @@ export async function getOrCreateBudget(month: number, year: number): Promise<Mo
   // Inserta vazio. As alocacoes serao herdadas via getBudgetAllocations.
   const inserted = await supabase
     .from('monthly_budgets')
-    .insert({ month, year, income: 0 })
+    .insert({ month, year, income: 0, user_id: wallet_id })
     .select('*')
     .single()
 
@@ -80,6 +85,7 @@ export async function getOrCreateBudget(month: number, year: number): Promise<Mo
       const refetch = await supabase
         .from('monthly_budgets')
         .select('*')
+        .eq('user_id', wallet_id)
         .eq('month', month)
         .eq('year', year)
         .single()
@@ -123,9 +129,12 @@ async function seedAllocationsFromPrevious(budget_id: string) {
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   const previous = await supabase
     .from('monthly_budgets')
     .select('id')
+    .eq('user_id', wallet_id)
     .neq('id', budget_id)
     .order('year', { ascending: false })
     .order('month', { ascending: false })
@@ -144,7 +153,8 @@ async function seedAllocationsFromPrevious(budget_id: string) {
       const rows = prev_allocs.data.map((a: any) => ({
         budget_id,
         category_id: a.category_id,
-        pct: Number(a.pct)
+        pct: Number(a.pct),
+        user_id: wallet_id
 
       }))
 
@@ -162,6 +172,7 @@ async function seedAllocationsFromPrevious(budget_id: string) {
   const cats = await supabase
     .from('categories')
     .select('id')
+    .eq('user_id', wallet_id)
     .is('archived_at', null)
 
   if (cats.data && cats.data.length > 0) {
@@ -169,7 +180,8 @@ async function seedAllocationsFromPrevious(budget_id: string) {
     const rows = cats.data.map((c: any) => ({
       budget_id,
       category_id: c.id,
-      pct: 0
+      pct: 0,
+      user_id: wallet_id
 
     }))
 
@@ -262,10 +274,13 @@ export async function updateGoals(budget_id: string, goals: GoalsPayload) {
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   const rows = Object.entries(goals).map(([category_id, pct]) => ({
     budget_id,
     category_id,
-    pct
+    pct,
+    user_id: wallet_id
 
   }))
 
@@ -328,6 +343,8 @@ export async function addExpense(
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   const { data, error } = await supabase
     .from('expenses')
     .insert({
@@ -336,7 +353,8 @@ export async function addExpense(
       name: name.trim(),
       value,
       notes: notes?.trim() || null,
-      payment_method: payment_method || null
+      payment_method: payment_method || null,
+      user_id: wallet_id
 
     })
     .select('*')
@@ -503,6 +521,8 @@ export async function addExpenseAndRecurring(input: AddExpenseAndRecurringInput)
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   const inserted_recurring = await supabase
     .from('recurring_expenses')
     .insert({
@@ -513,7 +533,8 @@ export async function addExpenseAndRecurring(input: AddExpenseAndRecurringInput)
       duration_months: input.duration_months,
       start_month: input.start_month,
       start_year: input.start_year,
-      payment_method: input.payment_method || null
+      payment_method: input.payment_method || null,
+      user_id: wallet_id
 
     })
     .select('id')
@@ -534,7 +555,8 @@ export async function addExpenseAndRecurring(input: AddExpenseAndRecurringInput)
       value: input.value,
       notes: input.notes?.trim() || null,
       payment_method: input.payment_method || null,
-      recurring_id: inserted_recurring.data.id
+      recurring_id: inserted_recurring.data.id,
+      user_id: wallet_id
 
     })
     .select('*')
@@ -560,9 +582,12 @@ export async function listRecurring(): Promise<RecurringExpense[]> {
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   const { data, error } = await supabase
     .from('recurring_expenses')
     .select('*')
+    .eq('user_id', wallet_id)
     .order('created_at', { ascending: true })
 
   if (error) {
@@ -615,6 +640,8 @@ export async function addRecurring(input: AddRecurringInput) {
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   const { error } = await supabase.from('recurring_expenses').insert({
     category: input.category,
     name: input.name.trim(),
@@ -623,7 +650,8 @@ export async function addRecurring(input: AddRecurringInput) {
     duration_months: input.duration_months,
     start_month: input.start_month,
     start_year: input.start_year,
-    payment_method: input.payment_method || null
+    payment_method: input.payment_method || null,
+    user_id: wallet_id
 
   })
 
@@ -727,6 +755,8 @@ async function autofillForBudget(budget_id: string) {
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   const budget = await supabase
     .from('monthly_budgets')
     .select('month,year')
@@ -747,6 +777,7 @@ async function autofillForBudget(budget_id: string) {
   const all_budgets = await supabase
     .from('monthly_budgets')
     .select('id,month,year')
+    .eq('user_id', wallet_id)
     .order('year', { ascending: false })
     .order('month', { ascending: false })
 
@@ -768,7 +799,10 @@ async function autofillForBudget(budget_id: string) {
 
   )
 
-  const recurring = await supabase.from('recurring_expenses').select('*')
+  const recurring = await supabase
+    .from('recurring_expenses')
+    .select('*')
+    .eq('user_id', wallet_id)
 
   if (recurring.error) {
 
@@ -819,7 +853,8 @@ async function autofillForBudget(budget_id: string) {
     name: r.name,
     value: prev_values.get(r.id) ?? Number(r.value),
     recurring_id: r.id,
-    payment_method: r.payment_method ?? null
+    payment_method: r.payment_method ?? null,
+    user_id: wallet_id
 
   }))
 
@@ -858,9 +893,12 @@ export async function listBudgetHistory(): Promise<
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   const budgets = await supabase
     .from('monthly_budgets')
     .select('*')
+    .eq('user_id', wallet_id)
     .order('year', { ascending: false })
     .order('month', { ascending: false })
 

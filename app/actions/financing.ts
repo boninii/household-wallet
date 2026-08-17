@@ -6,6 +6,8 @@ import { getSupabase } from '@/lib/supabase'
 
 import { assertMoney, assertMonthYear } from '@/lib/validate'
 
+import { getActiveWalletId } from '@/lib/wallet'
+
 import { getOrCreateBudget } from './budget'
 
 import type {
@@ -56,9 +58,12 @@ export async function listFinancings(): Promise<{
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   const { data, error } = await supabase
     .from('financings')
     .select('*')
+    .eq('user_id', wallet_id)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -141,7 +146,10 @@ export async function createFinancing(input: CreateFinancingInput) {
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   const { error } = await supabase.from('financings').insert({
+    user_id: wallet_id,
     name: input.name.trim(),
     category: input.category,
     total_parcels: input.total_parcels,
@@ -198,6 +206,8 @@ export async function payParcel(
 
   const supabase = await getSupabase()
 
+  const wallet_id = await getActiveWalletId()
+
   const fin = await supabase
     .from('financings')
     .select('*')
@@ -233,7 +243,8 @@ export async function payParcel(
       budget_id: budget.id,
       category: financing.category,
       name: `${financing.name} (parcela ${parcel_number}/${financing.total_parcels})`,
-      value
+      value,
+      user_id: wallet_id
 
     })
     .select('id')
@@ -250,7 +261,8 @@ export async function payParcel(
     budget_id: budget.id,
     parcel_number,
     value,
-    expense_id: expense.data.id
+    expense_id: expense.data.id,
+    user_id: wallet_id
 
   })
 

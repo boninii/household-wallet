@@ -26,6 +26,8 @@ import { Input, Label } from '@/components/ui/input'
 
 import { MoneyInput } from '@/components/ui/money-input'
 
+import { FormError } from '@/components/ui/form-error'
+
 type Props = {
 
   expense: Expense
@@ -207,7 +209,7 @@ export function ExpenseRow({ expense, on_updated, on_deleted }: Props) {
           <div className='flex items-center justify-between gap-3'>
 
             {error ? (
-              <span className='text-xs text-negative-soft'>{error}</span>
+              <FormError>{error}</FormError>
             ) : (
               <span className='text-[11px] text-text-300'>
                 Enter salva. Esc cancela.

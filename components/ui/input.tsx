@@ -72,9 +72,11 @@ export function Label({ className, required, children, ...props }: LabelProps) {
     >
       {children}
 
+      {/* sem cor propria: herda a do label, entao acompanha qualquer
+          variacao de cor passada via className */}
       {required && (
 
-        <span className='ml-0.5 text-negative-soft' aria-hidden>*</span>
+        <span className='ml-0.5' aria-hidden>*</span>
 
       )}
 
