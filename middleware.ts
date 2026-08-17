@@ -92,7 +92,13 @@ export async function middleware(request: NextRequest) {
 export const config = {
 
   // Roda em tudo, menos assets estaticos e o favicon/icone.
+  //
+  // O '/' PRECISA estar separado: com basePath, o Next compila o padrao geral
+  // como `^/<basePath>(?:/(...))` — o grupo do caminho e obrigatorio, entao a
+  // raiz do app (`/<basePath>` sem barra final) escapa do middleware e a pagina
+  // renderiza sem autenticacao.
   matcher: [
+    '/',
     '/((?!_next/static|_next/image|favicon.ico|icon.svg|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'
   ]
 
