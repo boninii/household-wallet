@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { createServerClient } from '@supabase/ssr'
 
+import { PUBLIC_TOKEN_BY_IP, clientIp, limiter } from '@/lib/rate-limit'
+
 // Renova a sessao a cada request e protege as rotas: quem nao esta logado vai
 // para /login; quem esta logado nao fica preso em /login.
 
@@ -9,7 +11,35 @@ import { createServerClient } from '@supabase/ssr'
 // '/convite' = tela de aceite; ela mesma pede login quando necessario.
 const PUBLIC_PATHS = ['/login', '/register', '/auth', '/w/', '/convite/']
 
+// Rotas que um anonimo alcanca com um token na URL. O token tem 192 bits
+// (adivinhar e inviavel), mas nada impede alguem de martelar o endpoint e
+// gastar banco a cada tentativa — o teto abaixo e contra isso.
+const TOKEN_PATHS = ['/w/', '/convite/']
+
 export async function middleware(request: NextRequest) {
+
+  const path = request.nextUrl.pathname
+
+  if (TOKEN_PATHS.some((p) => path.startsWith(p))) {
+
+    const decision = limiter.check(
+      `pub:ip:${clientIp(request.headers)}`,
+      PUBLIC_TOKEN_BY_IP
+    )
+
+    if (!decision.allowed) {
+
+      return new NextResponse('Muitas requisições. Tente novamente em instantes.', {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.ceil(decision.retry_after_ms / 1000))
+        }
+
+      })
+
+    }
+
+  }
 
   let response = NextResponse.next({ request })
 
@@ -62,8 +92,6 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession()
 
   const user = session?.user ?? null
-
-  const path = request.nextUrl.pathname
 
   const is_public = PUBLIC_PATHS.some((p) => path.startsWith(p))
 
