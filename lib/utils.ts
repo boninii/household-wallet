@@ -56,6 +56,21 @@ export function parseBRL(input: string) {
 
 }
 
+// Formata 'YYYY-MM-DD' como dd/mm/aaaa sem passar por Date (evita shift de fuso).
+export function formatDateBR(iso: string | null): string {
+
+  if (!iso) {
+
+    return '—'
+
+  }
+
+  const [y, m, d] = iso.slice(0, 10).split('-')
+
+  return `${d}/${m}/${y}`
+
+}
+
 const MONTHS_PT = [
 
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',

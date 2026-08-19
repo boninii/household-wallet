@@ -59,22 +59,7 @@ export async function getCachedUsdBrlRate(): Promise<CachedRate> {
 
   }
 
-  const fresh = await fetchFresh()
-
-  const upsert = await supabase.from('fx_rates').upsert({
-    pair: PAIR,
-    rate: fresh,
-    fetched_at: new Date().toISOString()
-
-  })
-
-  if (upsert.error && !isMissingFxTable(upsert.error)) {
-
-    throw new Error(upsert.error.message)
-
-  }
-
-  return { rate: fresh, fetched_at: new Date().toISOString() }
+  return fetchAndCache(supabase)
 
 }
 
@@ -82,12 +67,24 @@ export async function refreshUsdBrlRate(): Promise<CachedRate> {
 
   const supabase = await getSupabase()
 
+  return fetchAndCache(supabase)
+
+}
+
+// Busca a cotacao fresca e grava no cache — o miolo comum dos dois fluxos
+// (era um bloco duplicado identico nas duas actions).
+async function fetchAndCache(
+  supabase: Awaited<ReturnType<typeof getSupabase>>
+): Promise<CachedRate> {
+
   const fresh = await fetchFresh()
+
+  const fetched_at = new Date().toISOString()
 
   const upsert = await supabase.from('fx_rates').upsert({
     pair: PAIR,
     rate: fresh,
-    fetched_at: new Date().toISOString()
+    fetched_at
 
   })
 
@@ -97,7 +94,7 @@ export async function refreshUsdBrlRate(): Promise<CachedRate> {
 
   }
 
-  return { rate: fresh, fetched_at: new Date().toISOString() }
+  return { rate: fresh, fetched_at }
 
 }
 

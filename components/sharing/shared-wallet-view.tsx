@@ -8,26 +8,12 @@ import { Donut } from '@/components/ui/donut'
 
 import { formatRate } from '@/lib/types'
 
-import { formatBRL } from '@/lib/utils'
+import { formatBRL, formatDateBR } from '@/lib/utils'
+
+import { INVESTMENT_KIND_META as KIND_META } from '@/lib/investment-kinds'
 
 // Visao publica (sem login) da carteira de investimentos. Somente leitura —
 // os dados vem de uma RPC que valida token, revogacao e expiracao no banco.
-
-const KIND_META: Record<string, { label: string; color: string }> = {
-
-  renda_fixa: { label: 'Renda fixa', color: '#22D3EE' },
-
-  renda_variavel: { label: 'Renda variável', color: '#EC4899' },
-
-  fundos: { label: 'Fundos', color: '#FACC15' },
-
-  cripto: { label: 'Cripto', color: '#F97316' },
-
-  internacional: { label: 'Internacional', color: '#6366F1' },
-
-  outros: { label: 'Outros', color: '#A78BFA' }
-
-}
 
 type Item = {
 
@@ -48,20 +34,6 @@ type Item = {
   purchase_date: string | null
 
   maturity_date: string | null
-
-}
-
-function formatDateBR(iso: string | null): string {
-
-  if (!iso) {
-
-    return '—'
-
-  }
-
-  const [y, m, d] = iso.slice(0, 10).split('-')
-
-  return `${d}/${m}/${y}`
 
 }
 

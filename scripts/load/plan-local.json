@@ -1,0 +1,42 @@
+{
+  "base": "http://localhost:3000",
+  "scenarios": [
+    {
+      "name": "ssr-login",
+      "path": "/login",
+      "expect": ["2"],
+      "levels": [
+        { "c": 5, "d": 20 },
+        { "c": 10, "d": 20 },
+        { "c": 25, "d": 20 },
+        { "c": 50, "d": 20 },
+        { "c": 100, "d": 20 },
+        { "c": 200, "d": 20 },
+        { "c": 350, "d": 20 },
+        { "c": 500, "d": 20 }
+      ]
+    },
+    {
+      "name": "middleware-redirect",
+      "path": "/",
+      "expect": ["3"],
+      "levels": [
+        { "c": 10, "d": 15 },
+        { "c": 50, "d": 15 },
+        { "c": 200, "d": 15 },
+        { "c": 500, "d": 15 }
+      ]
+    },
+    {
+      "name": "fullstack-supabase-rpc",
+      "path": "/w/loadtest-token-inexistente",
+      "expect": ["2"],
+      "levels": [
+        { "c": 5, "d": 15 },
+        { "c": 10, "d": 15 },
+        { "c": 25, "d": 15 },
+        { "c": 50, "d": 15 }
+      ]
+    }
+  ]
+}

@@ -7,6 +7,13 @@ import { getSupabase } from '@/lib/supabase'
 import { getActiveWalletId } from '@/lib/wallet'
 
 import {
+  buildAutofillRows,
+  findPreviousBudget,
+  latestValueByRecurring,
+  pickApplicableRecurring
+} from '@/lib/autofill'
+
+import {
   assertMoney,
   assertMonthYear,
   assertPaymentMethod
@@ -703,53 +710,10 @@ export async function deleteRecurring(id: string) {
 
 }
 
-function monthsBetween(
-  from_month: number,
-  from_year: number,
-  to_month: number,
-  to_year: number
-) {
-
-  return (to_year - from_year) * 12 + (to_month - from_month)
-
-}
-
-function isRecurringActiveFor(
-  r: RecurringExpense,
-  month: number,
-  year: number
-): boolean {
-
-  if (!r.active) {
-
-    return false
-
-  }
-
-  if (r.start_month && r.start_year) {
-
-    const delta = monthsBetween(r.start_month, r.start_year, month, year)
-
-    if (delta < 0) {
-
-      return false
-
-    }
-
-    if (r.duration_months !== null && delta >= r.duration_months) {
-
-      return false
-
-    }
-
-  }
-
-  return true
-
-}
-
 // Logica de autofill sem revalidatePath — pode ser chamada por outras actions
 // internamente (como getOrCreateBudget) sem causar revalidacao duplicada.
+// As DECISOES (o que entra, com qual valor) vivem em lib/autofill (puro e
+// testado); aqui ficam so as queries e o insert.
 
 async function autofillForBudget(budget_id: string) {
 
@@ -769,23 +733,14 @@ async function autofillForBudget(budget_id: string) {
 
   }
 
-  const current_month = budget.data.month
+  const { month, year } = budget.data
 
-  const current_year = budget.data.year
-
-  // Procura o orçamento anterior mais recente (qualquer mês antes do atual)
   const all_budgets = await supabase
     .from('monthly_budgets')
     .select('id,month,year')
     .eq('user_id', wallet_id)
-    .order('year', { ascending: false })
-    .order('month', { ascending: false })
 
-  const previous = (all_budgets.data ?? []).find((b: any) =>
-    b.year < current_year ||
-    (b.year === current_year && b.month < current_month)
-
-  )
+  const previous = findPreviousBudget(all_budgets.data ?? [], month, year)
 
   // IDs de recorrentes que ja existem como despesa no mes atual (evita duplicar)
   const existing = await supabase
@@ -794,7 +749,7 @@ async function autofillForBudget(budget_id: string) {
     .eq('budget_id', budget_id)
     .not('recurring_id', 'is', null)
 
-  const existing_ids = new Set(
+  const existing_ids = new Set<string>(
     (existing.data ?? []).map((e: any) => e.recurring_id)
 
   )
@@ -810,12 +765,11 @@ async function autofillForBudget(budget_id: string) {
 
   }
 
-  const items = (recurring.data ?? []) as RecurringExpense[]
-
-  const applicable = items.filter(
-    (r) =>
-      !existing_ids.has(r.id) &&
-      isRecurringActiveFor(r, current_month, current_year)
+  const applicable = pickApplicableRecurring(
+    (recurring.data ?? []) as RecurringExpense[],
+    existing_ids,
+    month,
+    year
 
   )
 
@@ -827,7 +781,7 @@ async function autofillForBudget(budget_id: string) {
 
   // Busca EM LOTE o último valor lançado de cada recorrente no mês anterior
   // (antes era 1 query por recorrente — N+1 que deixava a criação do mês lenta).
-  const prev_values = new Map<string, number>()
+  let prev_values = new Map<string, number>()
 
   if (previous) {
 
@@ -838,25 +792,11 @@ async function autofillForBudget(budget_id: string) {
       .in('recurring_id', applicable.map((r) => r.id))
       .order('created_at', { ascending: true })
 
-    for (const row of prev.data ?? []) {
-
-      // ordem ascendente: a última ocorrência sobrescreve as anteriores
-      prev_values.set(row.recurring_id as string, Number(row.value))
-
-    }
+    prev_values = latestValueByRecurring(prev.data ?? [])
 
   }
 
-  const rows = applicable.map((r) => ({
-    budget_id,
-    category: r.category,
-    name: r.name,
-    value: prev_values.get(r.id) ?? Number(r.value),
-    recurring_id: r.id,
-    payment_method: r.payment_method ?? null,
-    user_id: wallet_id
-
-  }))
+  const rows = buildAutofillRows(applicable, prev_values, budget_id, wallet_id)
 
   const { error } = await supabase.from('expenses').insert(rows)
 

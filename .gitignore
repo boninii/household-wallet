@@ -13,3 +13,6 @@ tsconfig.tsbuildinfo
 
 # Config local do Claude Code
 .claude/
+
+# relatorios de coverage do vitest
+coverage/

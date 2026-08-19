@@ -1,0 +1,10 @@
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "complexity": ["warn", 0],
+    "max-depth": ["warn", 0],
+    "max-lines-per-function": ["warn", { "max": 1, "skipBlankLines": true, "skipComments": true }],
+    "max-nested-callbacks": ["warn", 0],
+    "max-statements": ["warn", 0]
+  }
+}

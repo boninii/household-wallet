@@ -1,0 +1,32 @@
+{
+  "base": "https://previews.obonini.dev.br",
+  "scenarios": [
+    {
+      "name": "vps-ssr-login",
+      "path": "/household-wallet/login",
+      "expect": ["2"],
+      "levels": [
+        { "c": 5, "d": 15 },
+        { "c": 10, "d": 15 },
+        { "c": 20, "d": 15 }
+      ]
+    },
+    {
+      "name": "vps-middleware-redirect",
+      "path": "/household-wallet",
+      "expect": ["3"],
+      "levels": [
+        { "c": 20, "d": 15 }
+      ]
+    },
+    {
+      "name": "vps-fullstack-supabase-rpc",
+      "path": "/household-wallet/w/loadtest-token-inexistente",
+      "expect": ["2"],
+      "levels": [
+        { "c": 5, "d": 15 },
+        { "c": 10, "d": 15 }
+      ]
+    }
+  ]
+}

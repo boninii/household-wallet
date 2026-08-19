@@ -22,7 +22,7 @@ import type {
 
 import { RATE_TYPES, formatRate } from '@/lib/types'
 
-import { cn, formatBRL, formatBRLPlain, parseBRL } from '@/lib/utils'
+import { cn, formatBRL, formatBRLPlain, formatDateBR, parseBRL } from '@/lib/utils'
 
 import { usePrivacy } from '@/components/shell/privacy-provider'
 
@@ -38,52 +38,10 @@ import { FormError } from '@/components/ui/form-error'
 
 import { PageHeader } from '@/components/budget/page-header'
 
-const KINDS: Array<{ key: InvestmentKind; label: string; color: string }> = [
-
-  { key: 'renda_fixa', label: 'Renda fixa', color: '#22D3EE' },
-
-  { key: 'renda_variavel', label: 'Renda variável', color: '#EC4899' },
-
-  { key: 'fundos', label: 'Fundos', color: '#FACC15' },
-
-  { key: 'cripto', label: 'Cripto', color: '#F97316' },
-
-  { key: 'internacional', label: 'Internacional', color: '#6366F1' },
-
-  { key: 'outros', label: 'Outros', color: '#A78BFA' }
-
-]
-
-const SUBTYPE_SUGGESTIONS: Record<InvestmentKind, string[]> = {
-
-  renda_fixa: ['CDB', 'LCI', 'LCA', 'Tesouro Selic', 'Tesouro IPCA', 'Tesouro Pré', 'Debênture', 'CRA', 'CRI'],
-
-  renda_variavel: ['Ações', 'BDR', 'ETF', 'FII', 'Opções'],
-
-  fundos: ['Multimercado', 'Ações', 'Imobiliário', 'Cambial'],
-
-  cripto: ['BTC', 'ETH', 'Stablecoin', 'Altcoin'],
-
-  internacional: ['Stocks', 'ETF', 'REIT', 'Bonds'],
-
-  outros: []
-
-}
-
-// Formata 'YYYY-MM-DD' como dd/mm/aaaa sem passar por Date (evita shift de fuso).
-function formatDateBR(iso: string | null): string {
-
-  if (!iso) {
-
-    return '—'
-
-  }
-
-  const [y, m, d] = iso.slice(0, 10).split('-')
-
-  return `${d}/${m}/${y}`
-
-}
+import {
+  INVESTMENT_KINDS as KINDS,
+  SUBTYPE_SUGGESTIONS
+} from '@/lib/investment-kinds'
 
 type Props = {
 
