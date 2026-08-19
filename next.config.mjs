@@ -5,9 +5,9 @@ const nextConfig = {
   // Entrega o stack de graca para quem faz reconhecimento. Nao custa nada tirar.
   poweredByHeader: false,
 
-  // Permite servir o app sob um sub-caminho (ex: previews.obonini.dev.br/household-wallet).
-  // Defina NEXT_PUBLIC_BASE_PATH=/household-wallet no BUILD (Easypanel).
-  // Sem a env (dev local), o app continua na raiz.
+  // O app roda na RAIZ do proprio subdominio (householdwallet.obonini.dev.br), entao
+  // NEXT_PUBLIC_BASE_PATH fica VAZIO em producao. A opcao segue aqui caso um dia
+  // seja preciso servir sob sub-caminho de novo: definir a env no BUILD. Sem ela, raiz.
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || undefined,
 
   // ───────────────────────────────────────────────────────────────────────
